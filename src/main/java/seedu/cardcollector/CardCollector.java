@@ -6,10 +6,12 @@ import java.util.ArrayList;
 public class CardCollector {
     private final Ui ui;
     private final CardsList inventory;
+    private final CardsList removedInventory;
 
     public CardCollector() {
         ui = new Ui();
         inventory = new CardsList();
+        removedInventory = new CardsList();
     }
 
     public void run() {
@@ -29,6 +31,7 @@ public class CardCollector {
                 }
                 handleParsing(parts[1]);
                 break;
+
             case "find":
                 if (parts.length < 2) {
                     System.out.println("Usage: find [/n NAME] [/p PRICE] [/q QUANTITY]");
@@ -37,6 +40,7 @@ public class CardCollector {
                 }
                 handleFind(parts[1]);
                 break;
+
             case "remove":
                 if (parts.length < 2) {
                     System.out.println("Missing index for remove.");
@@ -44,13 +48,22 @@ public class CardCollector {
                 }
                 handleRemove(parts[1]);
                 break;
+
             case "history":
-                handleHistory();
+                if (parts.length < 2) {
+                    System.out.println("Usage: history [added|modified|removed]");
+                    System.out.println("Example: history added");
+                    System.out.println("The argument must be provided.");
+                    break;
+                }
+                handleHistory(parts[1]);
                 break;
+
             case "bye":
                 ui.printExit();
                 isRunning = false;
                 break;
+
             default:
                 System.out.println("Unknown command!");
             }
@@ -113,7 +126,6 @@ public class CardCollector {
             ui.printRemoved(inventory, index);
 
         } catch (NumberFormatException e) {
-
             boolean removed = inventory.removeCardByName(argument);
 
             if (removed) {
@@ -125,9 +137,19 @@ public class CardCollector {
         }
     }
 
-    private void handleHistory() {
-        ArrayList<Card> sortedCards = inventory.getCardsSortedByLastAdded();
-        ui.printAddedHistory(sortedCards);
+    /**
+     * Handles the "history" command by displaying different types of inventory change history.
+     */
+    private void handleHistory(String arguments) {
+        if ("added".startsWith(arguments)) {
+            ui.printAddedHistory(inventory);
+        } else if ("modified".startsWith(arguments)) {
+            ui.printModifiedHistory(inventory);
+        } else if ("removed".startsWith(arguments)) {
+            ui.printRemovedHistory(removedInventory);
+        } else {
+            System.out.println("Unknown argument!");
+        }
     }
 
     public static void main(String[] args) {
