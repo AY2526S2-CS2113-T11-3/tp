@@ -5,9 +5,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.AbstractMap;
 import java.util.Scanner;
-import java.util.stream.*;
 
 public class Ui {
     private final Scanner scanner;
