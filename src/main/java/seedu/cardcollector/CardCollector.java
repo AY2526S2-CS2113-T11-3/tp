@@ -95,6 +95,9 @@ public class CardCollector {
     }
 
     private void handleFind(String arguments) {
+        // Precondition: Arguments passed from the main loop should never be null
+        assert arguments != null : "Arguments string for find command should not be null";
+
         String name = null;
         Float price = null;
         Integer quantity = null;
@@ -120,6 +123,10 @@ public class CardCollector {
         }
 
         ArrayList<Card> results = inventory.findCards(name, price, quantity);
+
+        // Postcondition: Results must be successfully returned (even if empty) before printing
+        assert results != null : "Returned search results should not be null";
+
         ui.printFound(results);
     }
 

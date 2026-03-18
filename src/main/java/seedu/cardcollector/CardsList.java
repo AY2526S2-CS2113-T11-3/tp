@@ -75,6 +75,10 @@ public class CardsList {
     }
 
     public ArrayList<Card> findCards(String name, Float price, Integer quantity) {
+
+        // Precondition: The cards inventory must have been initialized
+        assert cards != null : "Cards inventory should be initialized before searching";
+
         ArrayList<Card> results = new ArrayList<>();
         for (Card card : cards) {
             boolean matches = true;
@@ -91,6 +95,11 @@ public class CardsList {
                 results.add(card);
             }
         }
+
+        // Postconditions: Results list shouldn't be null, and cannot be larger than the cards inventory itself
+        assert results != null : "The results list should not be null";
+        assert results.size() <= cards.size() : "Found cards cannot exceed total cards inventory size";
+
         return results;
     }
 }

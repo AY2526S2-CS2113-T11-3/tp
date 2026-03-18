@@ -2,7 +2,6 @@ package seedu.cardcollector;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -53,8 +52,7 @@ public class CardsListTest {
     @Test
     public void findCards_byQuantity_success() {
         CardsList cardsList = new CardsList();
-        Instant instant = Instant.parse("2026-03-12T18:00:00Z");
-        
+
         cardsList.addCard(new Card("Bulbasaur", 5, 2.00f));
         cardsList.addCard(new Card("Squirtle", 1, 3.00f));
 
@@ -68,7 +66,6 @@ public class CardsListTest {
     @Test
     public void findCards_multipleAttributes_success() {
         CardsList cardsList = new CardsList();
-        Instant instant = Instant.parse("2026-03-12T18:00:00Z");
         
         cardsList.addCard(new Card("Mewtwo", 3, 20.00f));
         cardsList.addCard(new Card("Mewtwo", 1, 5.00f));
@@ -85,7 +82,6 @@ public class CardsListTest {
     @Test
     public void findCards_noMatch_returnsEmptyList() {
         CardsList cardsList = new CardsList();
-        Instant instant = Instant.parse("2026-03-12T18:00:00Z");
         
         cardsList.addCard(new Card("Eevee", 1, 4.00f));
 
