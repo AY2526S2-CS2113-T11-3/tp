@@ -182,7 +182,9 @@ public class CardCollector {
             try {
                 int i = Integer.parseInt(maxDisplayCountString);
 
-                if (i <= 1) return;
+                if (i <= 1) {
+                    return;
+                }
 
                 maxDisplayCount = i;
             } catch (NumberFormatException e) {
