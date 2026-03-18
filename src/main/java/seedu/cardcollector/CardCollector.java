@@ -140,21 +140,32 @@ public class CardCollector {
 
             if (index < 0 || index >= inventory.getSize()) {
                 System.out.println("Invalid card index.");
+                assert inventory.getSize() == sizeBefore;
                 return;
             }
+
             inventory.removeCard(index);
 
-            assert inventory.getSize() == sizeBefore - 1 : "Inventory size should decrease by 1 after removing";
+            assert inventory.getSize() == sizeBefore - 1
+                    : "Inventory size should decrease after removing by index";
 
             ui.printRemoved(inventory, index);
 
         } catch (NumberFormatException e) {
+            int sizeBefore = inventory.getSize();
+
             boolean removed = inventory.removeCardByName(argument);
 
             if (removed) {
+                assert inventory.getSize() == sizeBefore - 1
+                        : "Inventory size should decrease after removing by name";
+
                 System.out.println("Card \"" + argument + "\" removed successfully.");
                 ui.printList(inventory);
             } else {
+                assert inventory.getSize() == sizeBefore
+                        : "Inventory size should remain unchanged";
+
                 System.out.println("Card with name \"" + argument + "\" not found.");
             }
         }

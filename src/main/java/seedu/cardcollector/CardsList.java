@@ -6,10 +6,12 @@ import java.util.ArrayList;
 public class CardsList {
     private final ArrayList<Card> cards;
     private final ArrayList<Card> removedCards;
+    private final ArrayList<Card> addedCards;
 
     public CardsList() {
         this.cards = new ArrayList<Card>();
         this.removedCards = new ArrayList<Card>();
+        this.addedCards = new ArrayList<Card>();
     }
 
     public void addCard(Card card) {
@@ -22,23 +24,37 @@ public class CardsList {
         card.setLastAdded(currentInstant);
         card.setLastModified(currentInstant);
         cards.add(card);
+        addedCards.add(card);
     }
 
     public void removeCard(int index) {
+        assert cards != null : "Cards list should be initialized";
+
+        int sizeBefore = cards.size();
+
         if (index < 0) {
             System.out.println("Index cannot be 0 or negative!");
+            assert cards.size() == sizeBefore;
         } else if (index >= cards.size()) {
             System.out.println("Index cannot be greater than inventory size!");
+            assert cards.size() == sizeBefore;
         } else {
             Card removed = cards.remove(index);
 
             Instant currentInstant = Instant.now();
             removed.setLastModified(currentInstant);
             removedCards.add(removed);
+
+            assert cards.size() == sizeBefore - 1 : "Size should decrease after removal";
+            assert removedCards.contains(removed) : "Removed card must be tracked";
         }
     }
 
     public boolean removeCardByName(String name) {
+        assert name != null : "Name should not be null";
+
+        int sizeBefore = cards.size();
+
         for (int i = 0; i < cards.size(); i++) {
             Card card = cards.get(i);
             if (card.getName().equalsIgnoreCase(name)) {
@@ -48,9 +64,14 @@ public class CardsList {
                 removed.setLastModified(currentInstant);
                 removedCards.add(removed);
 
+                assert cards.size() == sizeBefore - 1 : "Size should decrease after removal";
+                assert removedCards.contains(removed) : "Removed card must be tracked";
+
                 return true;
             }
         }
+
+        assert cards.size() == sizeBefore : "Size should not change if not found";
         return false;
     }
 
@@ -66,6 +87,10 @@ public class CardsList {
         return removedCards;
     }
 
+    public ArrayList<Card> getAddedCards() {
+        return addedCards;
+    }
+
     public int getSize() {
         return cards.size();
     }
@@ -74,9 +99,11 @@ public class CardsList {
         return removedCards.size();
     }
 
-    public ArrayList<Card> findCards(String name, Float price, Integer quantity) {
+    public int getAddedSize() {
+        return addedCards.size();
+    }
 
-        // Precondition: The cards inventory must have been initialized
+    public ArrayList<Card> findCards(String name, Float price, Integer quantity) {
         assert cards != null : "Cards inventory should be initialized before searching";
 
         ArrayList<Card> results = new ArrayList<>();
@@ -96,9 +123,8 @@ public class CardsList {
             }
         }
 
-        // Postconditions: Results list shouldn't be null, and cannot be larger than the cards inventory itself
         assert results != null : "The results list should not be null";
-        assert results.size() <= cards.size() : "Found cards cannot exceed total cards inventory size";
+        assert results.size() <= cards.size();
 
         return results;
     }
