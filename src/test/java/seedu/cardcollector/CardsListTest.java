@@ -176,4 +176,61 @@ public class CardsListTest {
         assertEquals(moderateCard, resultsAscending.get(1));
         assertEquals(cheapCard, resultsAscending.get(0));
     }
+
+    @Test
+    public void editCard_partialAndFullEdit_success() {
+        CardsList cardsList = new CardsList();
+
+        Card original = new Card.Builder()
+                .name("Pikachu")
+                .price(5.50f)
+                .quantity(1)
+                .build();
+        cardsList.addCard(original);
+
+        // partial edit (only name + quantity)
+        cardsList.editCard(0, "Pikachu VMAX", 5, null);
+        assertEquals("Pikachu VMAX", cardsList.getCard(0).getName());
+        assertEquals(5, cardsList.getCard(0).getQuantity());
+        assertEquals(5.50f, cardsList.getCard(0).getPrice()); // price unchanged
+
+        // full edit
+        cardsList.editCard(0, "Charizard", 10, 25.0f);
+        assertEquals("Charizard", cardsList.getCard(0).getName());
+        assertEquals(10, cardsList.getCard(0).getQuantity());
+        assertEquals(25.0f, cardsList.getCard(0).getPrice());
+    }
+
+    @Test
+    public void inventoryAndWishlistAreIndependent_success() {
+        CardsList inventory = new CardsList();
+        CardsList wishlist = new CardsList();
+
+        // Add to inventory only
+        Card invCard = new Card.Builder()
+                .name("Pikachu")
+                .price(5.5f)
+                .quantity(1)
+                .build();
+        inventory.addCard(invCard);
+
+        // Add to wishlist only
+        Card wishCard = new Card.Builder()
+                .name("Charizard")
+                .price(99.99f)
+                .quantity(1)
+                .build();
+        wishlist.addCard(wishCard);
+
+        // Verify separation
+        assertEquals(1, inventory.getSize());
+        assertEquals(1, wishlist.getSize());
+        assertEquals("Pikachu", inventory.getCard(0).getName());
+        assertEquals("Charizard", wishlist.getCard(0).getName());
+
+        // Remove from one doesn't affect the other
+        inventory.removeCardByIndex(0);
+        assertEquals(0, inventory.getSize());
+        assertEquals(1, wishlist.getSize());
+    }
 }
