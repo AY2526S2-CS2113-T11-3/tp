@@ -42,9 +42,9 @@ public class Parser {
     private static final String KEYWORD_REORDER_COMMAND = "reorder";
 
     private static final String[] USAGE_REORDER_COMMAND = {
-            "reorder CRITERIA [asc|desc]",
-            "reorder price desc",
-            "wishlist reorder name asc"
+        "reorder CRITERIA [asc|desc]",
+        "reorder price desc",
+        "wishlist reorder name asc"
     };
 
     private static final String[] USAGE_HISTORY_COMMAND = {
