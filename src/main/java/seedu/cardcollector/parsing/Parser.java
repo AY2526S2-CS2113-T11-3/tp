@@ -16,6 +16,8 @@ import seedu.cardcollector.command.RemoveCardByIndexCommand;
 import seedu.cardcollector.command.RemoveCardByNameCommand;
 import seedu.cardcollector.command.UndoUploadCommand;
 import seedu.cardcollector.command.UploadCommand;
+import seedu.cardcollector.CardSortCriteria;
+import seedu.cardcollector.command.ReorderCommand;
 import seedu.cardcollector.exception.ParseBlankCommandException;
 import seedu.cardcollector.exception.ParseInvalidArgumentException;
 import seedu.cardcollector.exception.ParseUnknownCommandException;
@@ -37,6 +39,13 @@ public class Parser {
     private static final String KEYWORD_DOWNLOAD_COMMAND = "download";
     private static final String KEYWORD_UPLOAD_COMMAND = "upload";
     private static final String KEYWORD_UNDO_UPLOAD_COMMAND = "undoupload";
+    private static final String KEYWORD_REORDER_COMMAND = "reorder";
+
+    private static final String[] USAGE_REORDER_COMMAND = {
+            "reorder CRITERIA [asc|desc]",
+            "reorder price desc",
+            "wishlist reorder name asc"
+    };
 
     private static final String[] USAGE_HISTORY_COMMAND = {
         "history [added | modified | removed] [NUMBER | all]",
@@ -97,6 +106,8 @@ public class Parser {
             return handleUndoUpload(arguments);
         case KEYWORD_ACQUIRED_COMMAND:
             return handleAcquired(arguments);
+        case KEYWORD_REORDER_COMMAND:
+            return handleReorder(arguments);
         default:
             throw new ParseUnknownCommandException(commandKeyword);
         }
@@ -439,5 +450,61 @@ public class Parser {
                     new String[]{"acquired INDEX"}
             );
         }
+    }
+
+    private Command handleReorder(String arguments) throws ParseInvalidArgumentException {
+        if (arguments.isBlank()) {
+            throw new ParseInvalidArgumentException(
+                    "CRITERIA must be provided for reorder",
+                    USAGE_REORDER_COMMAND);
+        }
+
+        String[] parts = arguments.trim().split(REGEX_WHITESPACES);
+        String criteriaStr = parts[0].toLowerCase();
+
+        CardSortCriteria criteria;
+        switch (criteriaStr) {
+        case "name":
+            criteria = CardSortCriteria.NAME;
+            break;
+        case "price":
+            criteria = CardSortCriteria.PRICE;
+            break;
+        case "quantity":
+            criteria = CardSortCriteria.QUANTITY;
+            break;
+        case "lastadded":
+            criteria = CardSortCriteria.LAST_ADDED;
+            break;
+        case "lastmodified":
+            criteria = CardSortCriteria.LAST_MODIFIED;
+            break;
+        default:
+            throw new ParseInvalidArgumentException(
+                    "Invalid criteria. Valid options: name, price, quantity, lastadded, lastmodified",
+                    USAGE_REORDER_COMMAND);
+        }
+
+        boolean isAscending = true; // default = ascending
+        if (parts.length > 1) {
+            String orderStr = parts[1].toLowerCase();
+            if (orderStr.equals("asc") || orderStr.equals("ascending")) {
+                isAscending = true;
+            } else if (orderStr.equals("desc") || orderStr.equals("descending")) {
+                isAscending = false;
+            } else {
+                throw new ParseInvalidArgumentException(
+                        "Invalid order. Use 'asc' or 'desc'",
+                        USAGE_REORDER_COMMAND);
+            }
+        }
+
+        if (parts.length > 2) {
+            throw new ParseInvalidArgumentException(
+                    "Too many arguments for reorder command",
+                    USAGE_REORDER_COMMAND);
+        }
+
+        return new ReorderCommand(criteria, isAscending);
     }
 }

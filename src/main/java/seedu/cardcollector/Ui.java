@@ -123,6 +123,11 @@ public class Ui {
         printList(inventory);
     }
 
+    public void printReordered(CardsList list) {
+        System.out.println("I have reordered the cards!");
+        printList(list);
+    }
+
     public void printRemoveByNameSuccess(String targetName, CardsList inventory) {
         printBorder();
         System.out.println("Card \"" + targetName + "\" removed successfully");

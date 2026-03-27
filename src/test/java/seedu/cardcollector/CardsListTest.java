@@ -279,4 +279,52 @@ public class CardsListTest {
         assertEquals(1, inventory.getSize());
         assertEquals("Charizard", inventory.getCard(0).getName());
     }
+
+    @Test
+    public void reorder_byNameAscending_success() {
+        CardsList cardsList = new CardsList();
+
+        Card cardZ = new Card.Builder().name("Zebra").price(10).quantity(1).build();
+        Card cardA = new Card.Builder().name("Apple").price(20).quantity(1).build();
+        Card cardM = new Card.Builder().name("Monkey").price(15).quantity(1).build();
+
+        cardsList.addCard(cardZ);
+        cardsList.addCard(cardA);
+        cardsList.addCard(cardM);
+
+        cardsList.reorder(CardSortCriteria.NAME, true);
+
+        ArrayList<Card> ordered = cardsList.getCards();
+        assertEquals("Apple", ordered.get(0).getName());
+        assertEquals("Monkey", ordered.get(1).getName());
+        assertEquals("Zebra", ordered.get(2).getName());
+    }
+
+    @Test
+    public void reorder_byPriceDescending_success() {
+        CardsList cardsList = new CardsList();
+
+        Card cardLow = new Card.Builder().name("Low").price(5).quantity(1).build();
+        Card cardHigh = new Card.Builder().name("High").price(100).quantity(1).build();
+        Card cardMid = new Card.Builder().name("Mid").price(50).quantity(1).build();
+
+        cardsList.addCard(cardLow);
+        cardsList.addCard(cardHigh);
+        cardsList.addCard(cardMid);
+
+        cardsList.reorder(CardSortCriteria.PRICE, false);
+
+        ArrayList<Card> ordered = cardsList.getCards();
+        assertEquals("High", ordered.get(0).getName());
+        assertEquals("Mid", ordered.get(1).getName());
+        assertEquals("Low", ordered.get(2).getName());
+    }
+
+    @Test
+    public void reorder_emptyList_doesNothing() {
+        CardsList cardsList = new CardsList();
+        cardsList.reorder(CardSortCriteria.LAST_ADDED, true);
+        assertEquals(0, cardsList.getSize());
+    }
+
 }
