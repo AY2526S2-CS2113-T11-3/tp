@@ -83,6 +83,14 @@ public class ParserTest {
                 ParseInvalidArgumentException.class,
                 () -> parser.parse("add /n Pikachu /q 1 /p xyz")
         );
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("add /n Pikachu /q -1 /p 5.50")
+        );
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("add /n Pikachu /q 1 /p -1")
+        );
     }
 
     //@@author WeiHeng2003
