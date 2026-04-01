@@ -3,26 +3,28 @@
 ## Table of Contents
 - [Acknowledgements](#acknowledgements)
 - [Design & Implementation](#design--implementation)
-    - [Edit Feature](#edit-feature)
-      - [Architecture-level](#architecture-level)
-      - [Implementation](#implementation-key-code-snippets)
-      - [Sequence Diagram](#sequence-diagram-edit-1-n-dragonite-q-3)
-    - [Undo Feature](#undo-feature)
-      - [Architecture-level](#architecture-level-1)
-      - [Implementation](#implementation-key-code-snippets-1)
-      - [Class Diagram](#class-diagram)
-    - [Wishlist](#wishlist-feature)
-      - [Architecture-level](#architecture-level-2)
-      - [Implementation](#implementation-key-code-snippets-2)
-      - [Class Diagram](#class-diagram-1)
-    - [Product Scope](#product-scope)
-      - [Target User Profile](#target-user-profile)
-      - [Value Proposition](#value-proposition) 
-    - [User Stories](#user-stories)
-    - [Non-Functional Requirements](#non-functional-requirements)
-    - [Glossary](#glossary)
-      - [Mainsteam OS](#mainstream-os)
-    - [Instructions for manual testing](#instructions-for-manual-testing)
+  - [Edit Feature](#edit-feature)
+    - [Architecture-level](#architecture-level)
+    - [Implementation](#implementation-key-code-snippets)
+    - [Sequence Diagram](#sequence-diagram-edit-1-n-dragonite-q-3)
+  - [Undo Feature](#undo-feature)
+    - [Architecture-level](#architecture-level-1)
+    - [Implementation](#implementation-key-code-snippets-1)
+  - [List Feature](#list-feature)
+  - [History Feature](#history-feature)
+  - [Wishlist](#wishlist-feature)
+    - [Architecture-level](#architecture-level-2)
+    - [Implementation](#implementation-key-code-snippets-2)
+    - [Class Diagram](#class-diagram-1)
+  - [Disambiguator](#disambiguator)
+- [Product Scope](#appendix-product-scope)
+  - [Target User Profile](#target-user-profile)
+  - [Value Proposition](#value-proposition) 
+- [User Stories](#appendix-user-stories)
+- [Non-Functional Requirements](#appendix-non-functional-requirements)
+- [Glossary](#appendix-glossary)
+  - [Mainsteam OS](#mainstream-os)
+- [Instructions for manual testing](#appendix-instructions-for-manual-testing)
 
 ## Acknowledgements
 - For the PlantUML styling, we adapted from [addressbook-level3](https://github.com/se-edu/addressbook-level3/blob/master/docs/diagrams/style.puml).
@@ -35,21 +37,6 @@ The architecture of CardCollector consists of three main components:
 1. **`Ui`**: Handles all interactions with the user (reading input and printing formatted output).
 2. **`CardCollector`**: The main logic controller that parses user input and executes the appropriate commands.
 3. **`CardsList` & `Card`**: The data structures storing the inventory and individual card details, including timestamp history.
-
-### History Feature
-The history feature is a log of when cards were added, modified, or removed.
-It is not intended to represent command history, but rather a changelog of the cards in the inventory.
-
-#### History Command
-The `history` command displays the historical log that were generated when other commands were executed.
-As such, this command itself does not change or mutate any data.
-
-To model the interactions that occur when the user issues the command `history all added`, below is a *Sequence Diagram* to illustrate it.
-Some details related to UI input handling have been omitted for brevity.
-
-<img src="images/HistorySequenceDiagram.svg" width="550" />
-
-**Note:** The lifeline for `HistoryCommand` actually ends at the destroy marker (X), but due to a limitation in PlantUML, the dotted lifeline continues downwards.
 
 ### Edit Feature
 
@@ -216,6 +203,50 @@ If the `lastCommand` was an:
 #### Sequence Diagram
 <img src="images/UndoSequenceDiagram.svg" width="900" />
 
+### List Feature
+This feature lists all cards in the current list in a sorted order.
+
+#### List Command
+The parsing of this command uses the [Disambiguator](#disambiguator) to support fuzzy arguments.
+
+### History Feature
+The cards history is a log of when cards were added, modified, or removed.
+It should not be confused with command history, as its primary purpose is to record a changelog of the cards in the inventory,
+therefore `undo` command does not revert the history, but rather adds to the history.
+
+#### Design decisions
+- For each history entry, a deep copy of the previous and current card is stored.
+- 3 category types were devised. They are **mutually exclusive**
+  to ensure they can be listed in a chronological sequence without duplicated entries representing the same event.
+    - An `ADDED` entry occurs when a new or existing card is added, or when the edit command increases the quantity of the card.
+    - A `MODIFIED` entry occurs when a card value is changed, **excluding** any changes to the quantity of the card.
+    - A `REMOVED` entry occurs when a card is removed, or when the edit command decreases the quantity of the card.
+
+#### Architecture flow
+Whenever an `add`, `edit`, `remove*`, `tag` or any other command that changes the inventory is executed
+1. A new `CardHistoryEntry` is created. It stores the previous version of the card before any changes (if any), and
+   the current version of the card after the changes (if any).
+2. This new entry is added to `CardsHistory`.
+
+<img src="images/HistoryClassDiagram.svg" width="550" />
+
+#### Alternatives considered
+- A more compact way to store the history, is to track what changed instead of storing two copies of the card.
+  While this solution is space-saving, it increases the complexity of decoding and encoding of the history state.
+
+
+#### History Command
+The `history` command simply displays the historical log that were generated when other commands were executed.
+As such, this command itself does not change or mutate any data.
+The parsing of this command uses the [Disambiguator](#disambiguator) to support fuzzy arguments.
+
+To model the interactions that occur when the user issues the command `history all added`, below is a *Sequence Diagram* to illustrate it.
+Some details related to `UI` input handling, and `CardsHistory` have been omitted for brevity.
+
+<img src="images/HistorySequenceDiagram.svg" width="550" />
+
+**Note:** The lifeline for `HistoryCommand` actually ends at the destroy marker (X), but due to a limitation in PlantUML, the dotted lifeline continues downwards.
+
 ### Wishlist Feature
 
 The wishlist is a completely separate card list that supports **every** existing command (add, edit, list, find, remove, history, etc.). Users must prefix commands with `wishlist `.
@@ -274,6 +305,16 @@ public void printList(CardsList list) {
 - Wrapper commands (e.g. `WishlistAddCommand`) — rejected (massive duplication).
 - Single `CardCollectionManager` with a map — rejected (overkill for exactly two lists).
 
+### Disambiguator
+The `Disambiguator` takes an input string and matches it against a list of keywords strings
+to determine which one the user intended to enter.
+This is to support fuzzy arguments in certain commands to make it faster for users to type.
+
+* To illustrate, if the keywords are "share", "shard", "shout"
+* Input of "sh" matches all 3 keywords, as we cannot determine which it is, an exception is thrown.
+* Input of "sha" matches all 2 keywords, as we cannot determine which it is, an exception is thrown.
+* Input of "shar" matches "shard", thus the user probably intended to enter the string "shard".
+
 ## Appendix: Product Scope
 ### Target User Profile
 - Trading Card Game (TCG) collectors
@@ -295,8 +336,9 @@ public void printList(CardsList list) {
 | v2.0    | TCG Collector | have a wishlist to track what cards I want to get                            | check them off the wishlist once I have them                                    |
 
 ## Appendix: Non-Functional Requirements
-- Should work on any [mainstream OS](#mainstream-os) as long as it has Java 17 or above installed
-- Should be able to hold up to 1000 cards without a noticeable sluggishness in performance
+- Should work on any [mainstream OS](#mainstream-os) as long as it has Java 17 or above installed.
+- Should be able to hold up to 1000 cards without a noticeable sluggishness in performance.
+- Should be reasonably easy for a fast typist to quickly enter the commands.
 
 ## Appendix: Glossary
 ### Mainstream OS
