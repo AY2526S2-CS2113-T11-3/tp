@@ -345,7 +345,8 @@ public class Ui {
                     ? 0
                     : analytics.getTotalValue() / analytics.getTotalQuantity();
 
-            out.println("Average quantity per distinct card: " + String.format(Locale.ROOT, "%.2f", averageQuantityPerCard));
+            out.println("Average quantity per distinct card: "
+                    + String.format(Locale.ROOT, "%.2f", averageQuantityPerCard));
             out.println("Average value per distinct card: $" + formatMoney(averageValuePerCard));
             out.println("Average value per unit: $" + formatMoney(averageValuePerUnit));
         } else {
@@ -374,8 +375,27 @@ public class Ui {
             out.println("Collection size: Empty");
         }
 
+        out.println();
         printMostExpensiveCards(analytics.getMostExpensiveCards());
+
+        out.println();
+        printTopCardsByHoldingValue(analytics.getTopCardsByHoldingValue());
+
+        out.println();
+        printCheapestCards(analytics.getCheapestCards());
+
+        out.println();
         printTopSets(analytics.getTopSetsByCount());
+
+        out.println();
+        printTopSetsByValue(analytics.getTopSetsByValue());
+
+        out.println();
+        printPriceDistribution(analytics);
+
+        out.println();
+        printMetadataCoverage(analytics);
+
         printBorder();
     }
 
@@ -423,6 +443,68 @@ public class Ui {
                     + " ($" + formatMoney(card.getPrice()) + " each, qty " + card.getQuantity()
                     + ", total $" + formatMoney(metric.getLineValue()) + ")");
         }
+    }
+
+    private void printTopCardsByHoldingValue(List<CardsAnalytics.CardMetric> cardsByHoldingValue) {
+        out.println("Top cards by total holding value:");
+        if (cardsByHoldingValue.isEmpty()) {
+            out.println("None");
+            return;
+        }
+
+        for (int i = 0; i < cardsByHoldingValue.size(); i++) {
+            CardsAnalytics.CardMetric metric = cardsByHoldingValue.get(i);
+            Card card = metric.getCard();
+            out.println((i + 1) + ". " + card.getName()
+                    + " ($" + formatMoney(metric.getLineValue()) + ")");
+        }
+    }
+
+    private void printCheapestCards(List<CardsAnalytics.CardMetric> cheapestCards) {
+        out.println("Cheapest cards:");
+        if (cheapestCards.isEmpty()) {
+            out.println("None");
+            return;
+        }
+
+        for (int i = 0; i < cheapestCards.size(); i++) {
+            CardsAnalytics.CardMetric metric = cheapestCards.get(i);
+            Card card = metric.getCard();
+            out.println((i + 1) + ". " + card.getName()
+                    + " ($" + formatMoney(card.getPrice()) + " each, qty " + card.getQuantity()
+                    + ", total $" + formatMoney(metric.getLineValue()) + ")");
+        }
+    }
+
+    private void printTopSetsByValue(List<CardsAnalytics.SetValueMetric> topSetsByValue) {
+        out.println("Top sets by value:");
+        if (topSetsByValue.isEmpty()) {
+            out.println("None");
+            return;
+        }
+
+        for (int i = 0; i < topSetsByValue.size(); i++) {
+            CardsAnalytics.SetValueMetric metric = topSetsByValue.get(i);
+            out.println((i + 1) + ". " + metric.getSetName()
+                    + " ($" + formatMoney(metric.getTotalValue()) + ")");
+        }
+    }
+
+    private void printPriceDistribution(CardsAnalytics analytics) {
+        out.println("Price distribution:");
+        out.println("$0 cards: " + analytics.getZeroPriceCards());
+        out.println("$0.01-$9.99 cards: " + analytics.getLowPriceCards());
+        out.println("$10-$49.99 cards: " + analytics.getMediumPriceCards());
+        out.println("$50-$99.99 cards: " + analytics.getUpperMidPriceCards());
+        out.println("$100+ cards: " + analytics.getHighPriceCards());
+    }
+
+    private void printMetadataCoverage(CardsAnalytics analytics) {
+        out.println("Metadata coverage:");
+        out.println("Cards with notes: " + analytics.getCardsWithNotes()
+                + "/" + analytics.getDistinctCards());
+        out.println("Cards with set information: " + analytics.getCardsWithSetInformation()
+                + "/" + analytics.getDistinctCards());
     }
 
     private void printTopSets(List<CardsAnalytics.SetMetric> topSets) {

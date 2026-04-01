@@ -135,39 +135,39 @@ public class CardsList {
     public CardsAnalytics getAnalytics(int expensiveLimit, int topSetLimit) {
         int totalQuantity = 0;
         double totalValue = 0;
-        Map<String, Integer> setCounts = new HashMap<>();
 
-        double highestPrice = Double.MIN_VALUE;
-        double lowestPrice = Double.MAX_VALUE;
-        int highestQuantity = Integer.MIN_VALUE;
-        int lowestQuantity = Integer.MAX_VALUE;
+        Map<String, Integer> setCounts = new HashMap<>();
+        Map<String, Double> setValues = new HashMap<>();
+
+        int zeroPriceCards = 0;
+        int lowPriceCards = 0;
+        int mediumPriceCards = 0;
+        int upperMidPriceCards = 0;
+        int highPriceCards = 0;
+
         int cardsWithNotes = 0;
-        int cardsWithSet = 0;
-        int cardsWithTags = 0;
-        int expensiveCardCount = 0;
-        int zeroPriceCardCount = 0;
+        int cardsWithSetInformation = 0;
 
         for (Card card : cards) {
             totalQuantity += card.getQuantity();
             totalValue += card.getPrice() * card.getQuantity();
 
-            String normalizedSetName = normalizeSetName(card.getCardSet());
-            setCounts.merge(normalizedSetName, card.getQuantity(), Integer::sum);
-
-            if (card.getPrice() > highestPrice) {
-                highestPrice = card.getPrice();
+            if (card.getCardSet() != null && !card.getCardSet().isBlank()) {
+                String normalizedSetName = normalizeSetName(card.getCardSet());
+                setCounts.merge(normalizedSetName, card.getQuantity(), Integer::sum);
+                setValues.merge(normalizedSetName, (double) card.getPrice() * card.getQuantity(), Double::sum);
             }
 
-            if (card.getPrice() < lowestPrice) {
-                lowestPrice = card.getPrice();
-            }
-
-            if (card.getQuantity() > highestQuantity) {
-                highestQuantity = card.getQuantity();
-            }
-
-            if (card.getQuantity() < lowestQuantity) {
-                lowestQuantity = card.getQuantity();
+            if (card.getPrice() == 0) {
+                zeroPriceCards++;
+            } else if (card.getPrice() < 10) {
+                lowPriceCards++;
+            } else if (card.getPrice() < 50) {
+                mediumPriceCards++;
+            } else if (card.getPrice() < 100) {
+                upperMidPriceCards++;
+            } else {
+                highPriceCards++;
             }
 
             if (card.getNote() != null && !card.getNote().isBlank()) {
@@ -175,36 +175,28 @@ public class CardsList {
             }
 
             if (card.getCardSet() != null && !card.getCardSet().isBlank()) {
-                cardsWithSet++;
+                cardsWithSetInformation++;
             }
-
-            if (card.getTags() != null && !card.getTags().isEmpty()) {
-                cardsWithTags++;
-            }
-
-            if (card.getPrice() > 100) {
-                expensiveCardCount++;
-            }
-
-            if (card.getPrice() == 0) {
-                zeroPriceCardCount++;
-            }
-        }
-
-        double averagePrice = cards.isEmpty() ? 0 : totalValue / totalQuantity;
-        double averageEntryValue = cards.isEmpty() ? 0 : totalValue / cards.size();
-        double averageQuantity = cards.isEmpty() ? 0 : (double) totalQuantity / cards.size();
-
-        if (cards.isEmpty()) {
-            highestPrice = 0;
-            lowestPrice = 0;
-            highestQuantity = 0;
-            lowestQuantity = 0;
         }
 
         ArrayList<CardsAnalytics.CardMetric> mostExpensiveCards = cards.stream()
                 .sorted(Comparator.comparingDouble(Card::getPrice)
                         .reversed()
+                        .thenComparing(Card::getName, String.CASE_INSENSITIVE_ORDER))
+                .limit(expensiveLimit)
+                .map(card -> new CardsAnalytics.CardMetric(card, card.getPrice() * card.getQuantity()))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        ArrayList<CardsAnalytics.CardMetric> topCardsByHoldingValue = cards.stream()
+                .sorted(Comparator.comparingDouble((Card card) -> card.getPrice() * card.getQuantity())
+                        .reversed()
+                        .thenComparing(Card::getName, String.CASE_INSENSITIVE_ORDER))
+                .limit(expensiveLimit)
+                .map(card -> new CardsAnalytics.CardMetric(card, card.getPrice() * card.getQuantity()))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        ArrayList<CardsAnalytics.CardMetric> cheapestCards = cards.stream()
+                .sorted(Comparator.comparingDouble(Card::getPrice)
                         .thenComparing(Card::getName, String.CASE_INSENSITIVE_ORDER))
                 .limit(expensiveLimit)
                 .map(card -> new CardsAnalytics.CardMetric(card, card.getPrice() * card.getQuantity()))
@@ -217,7 +209,30 @@ public class CardsList {
                 .map(entry -> new CardsAnalytics.SetMetric(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        return new CardsAnalytics(cards.size(), totalQuantity, totalValue, mostExpensiveCards, topSetsByCount);
+        ArrayList<CardsAnalytics.SetValueMetric> topSetsByValue = setValues.entrySet().stream()
+                .sorted(Map.Entry.<String, Double>comparingByValue().reversed()
+                        .thenComparing(Map.Entry.comparingByKey(String.CASE_INSENSITIVE_ORDER)))
+                .limit(topSetLimit)
+                .map(entry -> new CardsAnalytics.SetValueMetric(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        return new CardsAnalytics(
+                cards.size(),
+                totalQuantity,
+                totalValue,
+                mostExpensiveCards,
+                topCardsByHoldingValue,
+                cheapestCards,
+                topSetsByCount,
+                topSetsByValue,
+                zeroPriceCards,
+                lowPriceCards,
+                mediumPriceCards,
+                upperMidPriceCards,
+                highPriceCards,
+                cardsWithNotes,
+                cardsWithSetInformation
+        );
     }
 
     public int getSize() {
