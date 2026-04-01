@@ -264,7 +264,23 @@ If the `lastCommand` was an:
 This feature lists all cards in the current list in a sorted order.
 
 #### List Command
+By default, the displayed list is sorted by index in ascending order.
+
 The parsing of this command uses the [Disambiguator](#disambiguator) to support fuzzy arguments.
+
+When the user types `list 50 quantity descending`:
+1. `Ui` reads the raw input.
+2. `CardCollector` passes the input to `Parser`.
+3. `Parser` creates an `ListCommand` object.
+4. `CardCollector` calls `execute()` on the command, passing the correct `CardsList`.
+5. The `Arraylist` of cards is obtained via `getCards()`, which is then passed to `CardSorter.sort(...)`.
+6. `CardSorter` creates a copy of the `Arraylist`, then internally calls `getSortComparator(criteria)`,
+   and then uses this comparator for sorting and then limits the number of records to the appropriate length.
+7. The UI shows the sorted list.
+
+#### Card sorting classes
+
+<img src="images/CardSorterClassDiagram.svg" width="350" />
 
 
 ### History Feature
