@@ -41,16 +41,18 @@ public class Parser {
     private static final String FLAG_CONDITION = "/c";
     private static final String FLAG_LANGUAGE = "/l";
     private static final String FLAG_CARD_NUMBER = "/no";
+    private static final String FLAG_NOTE = "/nt";
     private static final String FLAG_ID = "/id";
     private static final String FLAG_TAG = "/t";
     private static final String FLAG_HELP = "/h";
     private static final String[] CARD_FIELD_FLAGS = {
-        FLAG_NAME, FLAG_QUANTITY, FLAG_PRICE, FLAG_SET, FLAG_RARITY, FLAG_CONDITION, FLAG_LANGUAGE, FLAG_CARD_NUMBER,
-        FLAG_TAG
+            FLAG_NAME, FLAG_QUANTITY, FLAG_PRICE, FLAG_SET, FLAG_RARITY,
+            FLAG_CONDITION, FLAG_LANGUAGE, FLAG_CARD_NUMBER, FLAG_NOTE, FLAG_TAG
     };
+
     private static final String[] ADD_FIELD_FLAGS = {
-        FLAG_NAME, FLAG_QUANTITY, FLAG_PRICE, FLAG_SET, FLAG_RARITY, FLAG_CONDITION, FLAG_LANGUAGE, FLAG_CARD_NUMBER,
-        FLAG_ID
+            FLAG_NAME, FLAG_QUANTITY, FLAG_PRICE, FLAG_SET, FLAG_RARITY,
+            FLAG_CONDITION, FLAG_LANGUAGE, FLAG_CARD_NUMBER, FLAG_NOTE, FLAG_ID
     };
 
     private static final String KEYWORD_ADD_COMMAND = "add";
@@ -104,7 +106,7 @@ public class Parser {
     };
 
     private static final String[] USAGE_ADD_COMMAND = {
-        "add /n NAME /q QTY /p PRICE [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER]",
+        "add /n NAME /q QTY /p PRICE [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER] [/nt NOTE]",
         "add /n Pikachu /q 1 /p 5.5",
         "add /n Charizard /q 1 /p 99.99 /s Base Set /r Holo /c Near Mint /l English /no 4/102"
     };
@@ -117,7 +119,7 @@ public class Parser {
     };
 
     private static final String[] USAGE_EDIT_COMMAND = {
-        "edit INDEX [/n NAME] [/q QTY] [/p PRICE] [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER]",
+        "edit INDEX [/n NAME] [/q QTY] [/p PRICE] [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER] [/nt NOTE]",
         "edit 1 /n Dragonite VMAX",
         "edit 2 /s Jungle /r Rare"
     };
@@ -285,6 +287,7 @@ public class Parser {
         String condition;
         String language;
         String cardNumber;
+        String note;
         UUID uid = null;
 
         try {
@@ -296,6 +299,7 @@ public class Parser {
             condition = optionalTextFlag(args, FLAG_CONDITION, ADD_FIELD_FLAGS);
             language = optionalTextFlag(args, FLAG_LANGUAGE, ADD_FIELD_FLAGS);
             cardNumber = optionalTextFlag(args, FLAG_CARD_NUMBER, ADD_FIELD_FLAGS);
+            note = optionalTextFlag(args, FLAG_NOTE, ADD_FIELD_FLAGS);
             String uidString = optionalTextFlag(args, FLAG_ID, ADD_FIELD_FLAGS);
             if (uidString != null) {
                 uid = UUID.fromString(uidString);
@@ -326,7 +330,7 @@ public class Parser {
             );
         }
 
-        return new AddCommand(uid, name, quantity, price, cardSet, rarity, condition, language, cardNumber);
+        return new AddCommand(uid, name, quantity, price, cardSet, rarity, condition, language, cardNumber, note);
     }
 
     private Command handleRemoveByIndex(String args) throws ParseInvalidArgumentException {
@@ -680,6 +684,7 @@ public class Parser {
         String condition = null;
         String language = null;
         String cardNumber = null;
+        String note = null;
 
         if (!flagArgs.isBlank()) {
             try {
@@ -699,15 +704,16 @@ public class Parser {
                 condition = optionalTextFlag(flagArgs, FLAG_CONDITION, CARD_FIELD_FLAGS);
                 language = optionalTextFlag(flagArgs, FLAG_LANGUAGE, CARD_FIELD_FLAGS);
                 cardNumber = optionalTextFlag(flagArgs, FLAG_CARD_NUMBER, CARD_FIELD_FLAGS);
+                note = optionalTextFlag(flagArgs, FLAG_NOTE, CARD_FIELD_FLAGS);
             } catch (NumberFormatException e) {
                 throw new ParseInvalidArgumentException(
-                    "Quantity must be an integer and price must be float",
-                    USAGE_EDIT_COMMAND
+                        "Quantity must be an integer and price must be float",
+                        USAGE_EDIT_COMMAND
                 );
             } catch (Exception e) {
                 throw new ParseInvalidArgumentException(
-                    "Invalid edit format",
-                    USAGE_EDIT_COMMAND
+                        "Invalid edit format",
+                        USAGE_EDIT_COMMAND
                 );
             }
         }
@@ -728,14 +734,15 @@ public class Parser {
 
         if (name == null && quantity == null && price == null
                 && cardSet == null && rarity == null && condition == null
-                && language == null && cardNumber == null) {
+                && language == null && cardNumber == null && note == null) {
             throw new ParseInvalidArgumentException(
                     "At least one field must be provided to edit",
                     USAGE_EDIT_COMMAND
             );
         }
 
-        return new EditCommand(index, name, quantity, price, cardSet, rarity, condition, language, cardNumber);
+        return new EditCommand(index, name, quantity, price,
+                cardSet, rarity, condition, language, cardNumber, note);
     }
 
     private Command handleTag(String arguments) throws ParseInvalidArgumentException {

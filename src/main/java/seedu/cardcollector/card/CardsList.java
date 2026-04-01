@@ -235,7 +235,8 @@ public class CardsList {
     }
 
     public boolean editCard(int index, String newName, Integer newQuantity, Float newPrice,
-            String newCardSet, String newRarity, String newCondition, String newLanguage, String newCardNumber) {
+                            String newCardSet, String newRarity, String newCondition,
+                            String newLanguage, String newCardNumber, String newNote) {
         assert index >= 0 && index < cards.size() : "Index should be validated before calling editCard";
 
         Card card = cards.get(index);
@@ -298,6 +299,11 @@ public class CardsList {
             anyFieldChanged = true;
         }
 
+        if (isUpdatedTextValue(newNote, card.getNote())) {
+            card.setNote(trimToNull(newNote));
+            anyFieldChanged = true;
+        }
+
         if (anyFieldChanged) {
             card.setLastModified(currentInstant);
             history.add(originalCard, card.copy());
@@ -343,7 +349,8 @@ public class CardsList {
                 && normalized(first.getRarity()).equals(normalized(second.getRarity()))
                 && normalized(first.getCondition()).equals(normalized(second.getCondition()))
                 && normalized(first.getLanguage()).equals(normalized(second.getLanguage()))
-                && normalized(first.getCardNumber()).equals(normalized(second.getCardNumber()));
+                && normalized(first.getCardNumber()).equals(normalized(second.getCardNumber()))
+                && normalized(first.getNote()).equals(normalized(second.getNote()));
     }
 
     private static boolean containsIgnoreCase(String actualValue, String expectedFragment) {
