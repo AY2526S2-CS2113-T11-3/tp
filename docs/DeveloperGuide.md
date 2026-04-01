@@ -93,20 +93,6 @@ private static boolean isSameCardVariant(Card first, Card second) {
 #### Class Diagram
 <img src="images/AddCommandClassDiagram.svg" width="900" />
 
-### History Feature
-The history feature is a log of when cards were added, modified, or removed.
-It is not intended to represent command history, but rather a changelog of the cards in the inventory.
-
-#### History Command
-The `history` command displays the historical log that were generated when other commands were executed.
-As such, this command itself does not change or mutate any data.
-
-To model the interactions that occur when the user issues the command `history all added`, below is a *Sequence Diagram* to illustrate it.
-Some details related to UI input handling have been omitted for brevity.
-
-<img src="images/HistorySequenceDiagram.svg" width="550" />
-
-**Note:** The lifeline for `HistoryCommand` actually ends at the destroy marker (X), but due to a limitation in PlantUML, the dotted lifeline continues downwards.
 
 ### Edit Feature
 
@@ -294,6 +280,9 @@ therefore `undo` command does not revert the history, but rather adds to the his
   - A `MODIFIED` entry occurs when a card value is changed, **excluding** any changes to the quantity of the card.
   - A `REMOVED` entry occurs when a card is removed, or when the edit command decreases the quantity of the card.
 
+  The `ENTIRE` value is a special enum constant used **only for filtering operations**. It is never assigned to individual history entries;
+  instead, it is only used to instruct the system to display entries from all 3 categories when listing history.
+
 #### Architecture flow
 Whenever an `add`, `edit`, `remove*`, `tag` or any other command that changes the inventory is executed
 1. A new `CardHistoryEntry` is created. It stores the previous version of the card before any changes (if any), and
@@ -304,7 +293,8 @@ Whenever an `add`, `edit`, `remove*`, `tag` or any other command that changes th
 
 #### Alternatives considered
 - A more compact way to store the history, is to track what changed instead of storing two copies of the card.
-  While this solution is space-saving, it increases the complexity of decoding and encoding of the history state.
+  While this alternative solution is space-saving, it increases the complexity of decoding and encoding of the history state,
+  which was why it was not adopted.
 
 
 #### History Command
