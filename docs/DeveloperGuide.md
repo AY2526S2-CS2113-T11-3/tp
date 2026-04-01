@@ -3,26 +3,32 @@
 ## Table of Contents
 - [Acknowledgements](#acknowledgements)
 - [Design & Implementation](#design--implementation)
+    - [Add Feature](#add-feature)
+        - [Architecture-level](#architecture-level)
+        - [Implementation](#implementation)
+        - [Class Diagram](#class-diagram)
+    - [History Feature](#history-feature)
+        - [History Command](#history-command)
     - [Edit Feature](#edit-feature)
-      - [Architecture-level](#architecture-level)
-      - [Implementation](#implementation-key-code-snippets)
-      - [Sequence Diagram](#sequence-diagram-edit-1-n-dragonite-q-3)
+        - [Architecture-level](#architecture-level-1)
+        - [Implementation](#implementation-key-code-snippets-1)
+        - [Sequence Diagram](#sequence-diagram-edit-1-n-dragonite-q-3)
     - [Undo Feature](#undo-feature)
-      - [Architecture-level](#architecture-level-1)
-      - [Implementation](#implementation-key-code-snippets-1)
-      - [Class Diagram](#class-diagram)
-    - [Wishlist](#wishlist-feature)
-      - [Architecture-level](#architecture-level-2)
-      - [Implementation](#implementation-key-code-snippets-2)
-      - [Class Diagram](#class-diagram-1)
-    - [Product Scope](#product-scope)
-      - [Target User Profile](#target-user-profile)
-      - [Value Proposition](#value-proposition) 
-    - [User Stories](#user-stories)
-    - [Non-Functional Requirements](#non-functional-requirements)
-    - [Glossary](#glossary)
-      - [Mainsteam OS](#mainstream-os)
-    - [Instructions for manual testing](#instructions-for-manual-testing)
+        - [Architecture-level](#architecture-level-2)
+        - [Implementation](#implementation-key-code-snippets-2)
+        - [Sequence Diagram](#sequence-diagram)
+    - [Wishlist Feature](#wishlist-feature)
+        - [Architecture-level](#architecture-level-3)
+        - [Implementation](#implementation-key-code-snippets-3)
+        - [Class Diagram](#class-diagram-2)
+        - [Sequence Diagram](#sequence-diagram-wishlist-add-example)
+- [Appendix: Product Scope](#appendix-product-scope)
+    - [Target User Profile](#target-user-profile)
+    - [Value Proposition](#value-proposition)
+- [Appendix: User Stories](#appendix-user-stories)
+- [Appendix: Non-Functional Requirements](#appendix-non-functional-requirements)
+- [Appendix: Glossary](#appendix-glossary)
+- [Appendix: Instructions for Manual Testing](#appendix-instructions-for-manual-testing)
 
 ## Acknowledgements
 - For the PlantUML styling, we adapted from [addressbook-level3](https://github.com/se-edu/addressbook-level3/blob/master/docs/diagrams/style.puml).
@@ -35,6 +41,56 @@ The architecture of CardCollector consists of three main components:
 1. **`Ui`**: Handles all interactions with the user (reading input and printing formatted output).
 2. **`CardCollector`**: The main logic controller that parses user input and executes the appropriate commands.
 3. **`CardsList` & `Card`**: The data structures storing the inventory and individual card details, including timestamp history.
+
+### Add Feature
+
+#### Architecture-level
+1. `CardCollector` reads the raw inputs using `Ui.readInput()` and passes it to `Parser.parse()`.
+2. `Parser.handleAdd()` checks for the 3 required flags (`/n`,`/q`,`/p`), then extracts the flag value and constructs an `AddCommand`
+3. `CardCollector` then creates a `CommandContext` and calls `command.execute(context)`.
+4. `AddCommand.execute()` calls `targetList.addCard(newCard)`.
+5. `CardList.addCard` scans for an existing card with identical name, price, etc... If found, it increments that card's quantity and sets the timestamp `lastAdded`.  
+Otherwise, it adds the new card at the end of the list. After which, regardless of the case records a CardHistory entry
+
+#### Implementation
+1. The core logic is in `CardsList.java`:  
+```java
+public void addCard(Card newCard) {
+    Instant currentInstant = Instant.now();
+
+    for (Card existingCard : cards) {
+        if (isSameCardVariant(existingCard, newCard)) {
+            Card originalCard = existingCard.copy();
+
+            int updatedQuantity = existingCard.getQuantity() + newCard.getQuantity();
+            existingCard.setQuantity(updatedQuantity);
+            existingCard.setLastAdded(currentInstant);
+
+            this.history.add(originalCard, existingCard.copy());
+            return;
+        }
+    }
+
+    newCard.setLastAdded(currentInstant);
+    cards.add(newCard);
+    this.history.add(null, newCard.copy());
+}
+```  
+The check for existing card to decide merge or append: 
+```java
+private static boolean isSameCardVariant(Card first, Card second) {
+    return first.getName().equalsIgnoreCase(second.getName())
+            && first.getPrice() == second.getPrice()
+            && normalized(first.getCardSet()).equals(normalized(second.getCardSet()))
+            && normalized(first.getRarity()).equals(normalized(second.getRarity()))
+            && normalized(first.getCondition()).equals(normalized(second.getCondition()))
+            && normalized(first.getLanguage()).equals(normalized(second.getLanguage()))
+            && normalized(first.getCardNumber()).equals(normalized(second.getCardNumber()));
+}
+```
+
+#### Class Diagram
+<img src="images/AddCommandClassDiagram.svg" width="900" />
 
 ### History Feature
 The history feature is a log of when cards were added, modified, or removed.
