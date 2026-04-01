@@ -3,28 +3,29 @@
 ## Table of Contents
 - [Acknowledgements](#acknowledgements)
 - [Design & Implementation](#design--implementation)
-    - [Add Feature](#add-feature)
-        - [Architecture-level](#architecture-level)
-        - [Implementation](#implementation)
-        - [Class Diagram](#class-diagram)
-    - [History Feature](#history-feature)
-        - [History Command](#history-command)
-    - [Edit Feature](#edit-feature)
-        - [Architecture-level](#architecture-level-1)
-        - [Implementation](#implementation-key-code-snippets-1)
-        - [Sequence Diagram](#sequence-diagram-edit-1-n-dragonite-q-3)
-    - [Undo Feature](#undo-feature)
-        - [Architecture-level](#architecture-level-2)
-        - [Implementation](#implementation-key-code-snippets-2)
-        - [Sequence Diagram](#sequence-diagram)
-    - [Wishlist Feature](#wishlist-feature)
-        - [Architecture-level](#architecture-level-3)
-        - [Implementation](#implementation-key-code-snippets-3)
-        - [Class Diagram](#class-diagram-2)
-        - [Sequence Diagram](#sequence-diagram-wishlist-add-example)
+  - [Add Feature](#add-feature)
+    - [Architecture-level](#architecture-level)
+    - [Implementation](#implementation)
+    - [Class Diagram](#class-diagram)
+  - [Edit Feature](#edit-feature)
+    - [Architecture-level](#architecture-level-1)
+    - [Implementation](#implementation-key-code-snippets-1)
+    - [Sequence Diagram](#sequence-diagram-edit-1-n-dragonite-q-3)
+  - [Undo Feature](#undo-feature)
+    - [Architecture-level](#architecture-level-2)
+    - [Implementation](#implementation-key-code-snippets-2)
+    - [Sequence Diagram](#sequence-diagram)
+  - [List Feature](#list-feature)
+  - [History Feature](#history-feature)
+  - [Wishlist Feature](#wishlist-feature)
+    - [Architecture-level](#architecture-level-3)
+    - [Implementation](#implementation-key-code-snippets-3)
+    - [Class Diagram](#class-diagram-2)
+    - [Sequence Diagram](#sequence-diagram-wishlist-add-example)
+  - [Disambiguator](#disambiguator)
 - [Appendix: Product Scope](#appendix-product-scope)
-    - [Target User Profile](#target-user-profile)
-    - [Value Proposition](#value-proposition)
+  - [Target User Profile](#target-user-profile)
+  - [Value Proposition](#value-proposition)
 - [Appendix: User Stories](#appendix-user-stories)
 - [Appendix: Non-Functional Requirements](#appendix-non-functional-requirements)
 - [Appendix: Glossary](#appendix-glossary)
@@ -76,7 +77,7 @@ public void addCard(Card newCard) {
     this.history.add(null, newCard.copy());
 }
 ```  
-The check for existing card to decide merge or append: 
+The check for existing card to decide merge or append:
 ```java
 private static boolean isSameCardVariant(Card first, Card second) {
     return first.getName().equalsIgnoreCase(second.getName())
@@ -204,9 +205,9 @@ The 'undo' command allows users to reverse the most recent [reversible command](
 #### Architecture-level
 
 1. `Parser` produces a `UndoCommand` and then `CardCollector` calls `execute(context)`
-2. `UndoCommand` retrieves the `commandHistory` stack from `context`. 
-   - If empty, it prints "Nothing to Undo" and returns immediately.
-   - Otherwise, it calls `history.pop()` to get the last reversible command and calls `lastCommand.undo(context)`
+2. `UndoCommand` retrieves the `commandHistory` stack from `context`.
+  - If empty, it prints "Nothing to Undo" and returns immediately.
+  - Otherwise, it calls `history.pop()` to get the last reversible command and calls `lastCommand.undo(context)`
 3. The previous command performs its targeted reversal depending on the command to undo (refer to alt frames in sequence diagram).
 4. `ui.printUndoSuccess(list)` is called and `CommandResult(isExit=false)` is returned and `CardCollector` calls `storage.save()`
 
@@ -253,7 +254,7 @@ If the `lastCommand` was an:
         ui.printNotEdited(inventory);
     }
     ```
-    `EditCommand.undo()` then restores all fields by calling `editCard` with the saved old values:
+  `EditCommand.undo()` then restores all fields by calling `editCard` with the saved old values:
     ```java
     public CommandResult undo(CommandContext context) {
     context.getTargetList().editCard(targetIndex, oldName, oldQuantity, oldPrice,
@@ -271,6 +272,53 @@ If the `lastCommand` was an:
 
 #### Sequence Diagram
 <img src="images/UndoSequenceDiagram.svg" width="900" />
+
+
+### List Feature
+This feature lists all cards in the current list in a sorted order.
+
+#### List Command
+The parsing of this command uses the [Disambiguator](#disambiguator) to support fuzzy arguments.
+
+
+### History Feature
+The cards history is a log of when cards were added, modified, or removed.
+It should not be confused with command history, as its primary purpose is to record a changelog of the cards in the inventory,
+therefore `undo` command does not revert the history, but rather adds to the history.
+
+#### Design decisions
+- For each history entry, a deep copy of the previous and current card is stored.
+- 3 category types were devised. They are **mutually exclusive**
+  to ensure they can be listed in a chronological sequence without duplicated entries representing the same event.
+  - An `ADDED` entry occurs when a new or existing card is added, or when the edit command increases the quantity of the card.
+  - A `MODIFIED` entry occurs when a card value is changed, **excluding** any changes to the quantity of the card.
+  - A `REMOVED` entry occurs when a card is removed, or when the edit command decreases the quantity of the card.
+
+#### Architecture flow
+Whenever an `add`, `edit`, `remove*`, `tag` or any other command that changes the inventory is executed
+1. A new `CardHistoryEntry` is created. It stores the previous version of the card before any changes (if any), and
+   the current version of the card after the changes (if any).
+2. This new entry is added to `CardsHistory`.
+
+<img src="images/HistoryClassDiagram.svg" width="550" />
+
+#### Alternatives considered
+- A more compact way to store the history, is to track what changed instead of storing two copies of the card.
+  While this solution is space-saving, it increases the complexity of decoding and encoding of the history state.
+
+
+#### History Command
+The `history` command simply displays the historical log that were generated when other commands were executed.
+As such, this command itself does not change or mutate any data.
+The parsing of this command uses the [Disambiguator](#disambiguator) to support fuzzy arguments.
+
+To model the interactions that occur when the user issues the command `history all added`, below is a *Sequence Diagram* to illustrate it.
+Some details related to `UI` input handling, and `CardsHistory` have been omitted for brevity.
+
+<img src="images/HistorySequenceDiagram.svg" width="550" />
+
+**Note:** The lifeline for `HistoryCommand` actually ends at the destroy marker (X), but due to a limitation in PlantUML, the dotted lifeline continues downwards.
+
 
 ### Wishlist Feature
 
@@ -330,6 +378,18 @@ public void printList(CardsList list) {
 - Wrapper commands (e.g. `WishlistAddCommand`) — rejected (massive duplication).
 - Single `CardCollectionManager` with a map — rejected (overkill for exactly two lists).
 
+
+### Disambiguator
+The `Disambiguator` takes an input string and matches it against a list of keywords strings
+to determine which one the user intended to enter.
+This is to support fuzzy arguments in certain commands to make it faster for users to type.
+
+* To illustrate, if the keywords are "share", "shard", "shout"
+* Input of "sh" matches all 3 keywords, as we cannot determine which it is, an exception is thrown.
+* Input of "sha" matches all 2 keywords, as we cannot determine which it is, an exception is thrown.
+* Input of "shar" matches "shard", thus the user probably intended to enter the string "shard".
+
+
 ## Appendix: Product Scope
 ### Target User Profile
 - Trading Card Game (TCG) collectors
@@ -340,21 +400,22 @@ public void printList(CardsList list) {
 
 ## Appendix: User Stories
 
-| Version | As a ...      | I want to ...                                                               | So that I can ...                                                               |
-|---------|---------------|-----------------------------------------------------------------------------|---------------------------------------------------------------------------------|
-| v1.0    | TCG Collector | add/remove cards to my collection with their details (name, quantity, price) | maintain an accurate digital catalog of all my cards                            |
-| v1.0    | TCG Collector | search for specific cards by name or set using text-based queries           | quickly locate cards in my collection without browsing through physical binders |
-| v1.0    | TCG Collector | organise my cards by different categories (set, rarity, card type)          | browse my collection in a structured way that suits my needs                    |
-| v1.0    | User          | edit any stored data                                                        | update/correct mistakes when I first add the card                               |
-| v1.0    | TCG Collector | view a chronological list of cards I recently added or removed              | quickly see what’s changed in my collection                                     |
-| v2.0    | User          | store my data even when I close the application                        | use the app without having to input my current cards again                      |
-| v2.0    | TCG Collector | have a wishlist to track what cards I want to get                           | check them off the wishlist once I have them                                    |
-| v2.0    | User          | undo my latest command                                                            | make quick rectification of errors made                                          |
-
+| Version | As a ...      | I want to ...                                                                | So that I can ...                                                              |
+|---------|---------------|------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| v1.0    | TCG Collector | add/remove cards to my collection with their details (name, quantity, price) | maintain an accurate digital catalog of all my cards                           |
+| v1.0    | TCG Collector | search for specific cards by name or set using text-based queries            | quickly locate cards in my collection without browsing through physical binders |
+| v1.0    | TCG Collector | organise my cards by different categories (set, rarity, card type)           | browse my collection in a structured way that suits my needs                   |
+| v1.0    | User          | edit any stored data                                                         | update/correct mistakes when I first add the card                              |
+| v1.0    | TCG Collector | view a chronological log of cards I recently added or removed                | quickly see what’s changed in my collection                                    |
+| v2.0    | User          | store my data even when I close the application                              | use the app without having to input my current cards again                     |
+| v2.0    | TCG Collector | have a wishlist to track what cards I want to get                            | check them off the wishlist once I have them                                   |
+| v2.0    | User          | undo my latest command                                                       | make quick rectification of errors made                                        |
+| v2.0    | TCG Collector | view cards sorted by their details such as price                             | quickly see my most valuable cards                                             |
 
 ## Appendix: Non-Functional Requirements
 - Should work on any [mainstream OS](#mainstream-os) as long as it has Java 17 or above installed
 - Should be able to hold up to 1000 cards without a noticeable sluggishness in performance
+- Should be reasonably easy for a fast typist to quickly enter the commands.
 
 ## Appendix: Glossary
 ### Mainstream OS
@@ -367,13 +428,13 @@ Given below are instructions to test the app manually.
 
 ### Adding a card
 1. Test case: `add /n Pikachu EX /q 3 /p 195.50`  
-Expected: A new card is added into the list, with the corresponding name, quantity and price
+   Expected: A new card is added into the list, with the corresponding name, quantity and price
 2. Test case: `add /n Mewtwo /p 50.20`  
-Expected: No card added. Error details shows missing required flags. 
+   Expected: No card added. Error details shows missing required flags.
 3. Test case: `add /nCharizard/q1/p2.2`  
-Expected: No card added. Error details shows invalid add format.
+   Expected: No card added. Error details shows invalid add format.
 4. Test case : `add /n Mewtwo /q -1 /p 5.50`  
-Expected: No card added. Error details shows quantity cannot be negative
+   Expected: No card added. Error details shows quantity cannot be negative
 5. Test case : `add /n Mewtwo /q 1 /p -5.50`  
    Expected: No card added. Error details shows price cannot be negative
 
@@ -381,8 +442,8 @@ Expected: No card added. Error details shows quantity cannot be negative
 ### Undo a add/remove/edit
 1. Prerequisites: A add/remove/edit command must be entered before this
 2. Test case: `add /n Pikachu EX /q 3 /p 195.50` + `undo`  
-Expected: A new card is added and the same card is removed.
+   Expected: A new card is added and the same card is removed.
 3. Test case: `add /n Mewtwo /q 3 /p 50.2` + `add /n Mewtwo /q 1 /p 50.2` + `undo`  
-Expected: A new card is added, quantity is increased then quantity is decreased back to original amount.
+   Expected: A new card is added, quantity is increased then quantity is decreased back to original amount.
 4. Test case: `undo` (without any prior [reversible command](#reversible-commands))  
-Expected: Nothing happens. Error details show Nothing to Undo.
+   Expected: Nothing happens. Error details show Nothing to Undo.

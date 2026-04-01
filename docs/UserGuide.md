@@ -84,6 +84,7 @@ Displays all cards in the current list in a sorted order.
 `list all`
 `list 50 quantity ascending`
 
+- By default, the displayed list is sorted by index in ascending order.
 - Arguments are optional, but if specified, they must be in order.
 - Argument matching is intentionally fuzzy for fast usage.
 
@@ -126,7 +127,7 @@ Searches the current list by name, price, quantity, optional metadata, tags/fold
 ### Tagging a card: `tag` or `folder`
 
 Adds or removes an optional tag/folder label on an existing card. Tags are lightweight labels such as `deck`,
-`sealed`, or `trade`, and you can use them later with `find /t ...` or `list /t ...`.
+`sealed`, or `trade`, and you can use them later with `find /t ...` or `filter /t ...`.
 
 **Format:** `tag add INDEX /t TAG`
 **Format:** `tag remove INDEX /t TAG`
@@ -160,7 +161,7 @@ Displays a historical log of when cards were added, modified, or removed.
 - Arguments are optional, but if specified, they must be in order.
 - Argument matching is intentionally fuzzy for fast usage.
 - An 'added' entry occurs when a new or existing card is added, or when the edit command increases the quantity of the card.
-- A 'modified' entry occurs when a card value is edited, **excluding** any changes to the quantity of the card.
+- A 'modified' entry occurs when a card value is changed, **excluding** any changes to the quantity of the card.
 - A 'removed' entry occurs when a card is removed, or when the edit command decreases the quantity of the card.
 
 **Examples:**
