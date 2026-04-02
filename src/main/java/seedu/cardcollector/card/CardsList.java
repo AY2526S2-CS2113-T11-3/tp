@@ -267,7 +267,8 @@ public class CardsList {
         return result;
     }
 
-    public ArrayList<Card> findCards(String name, Integer quantity, Float price,
+    //@@author bryankuah
+    public ArrayList<Card> findCards(String name, NumericFilter quantityFilter, NumericFilter priceFilter,
                                      String cardSet, String rarity, String condition,
                                      String language, String cardNumber, String note, String tag) {
 
@@ -281,11 +282,11 @@ public class CardsList {
                 matches = false;
             }
 
-            if (quantity != null && card.getQuantity() != quantity) {
+            if (quantityFilter != null && !quantityFilter.matches(card.getQuantity())) {
                 matches = false;
             }
 
-            if (price != null && card.getPrice() != price) {
+            if (priceFilter != null && !priceFilter.matches(card.getPrice())) {
                 matches = false;
             }
 
@@ -533,5 +534,11 @@ public class CardsList {
 
     public CardsHistory getHistory() {
         return history;
+    }
+
+    public void clear() {
+        assert cards != null : "Cards list should be initialized";
+        cards.clear();
+        history = new CardsHistory();  // reset history for empty list (undo restores old state anyway)
     }
 }
