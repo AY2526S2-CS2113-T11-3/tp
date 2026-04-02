@@ -46,7 +46,7 @@ public class HelpCommand extends Command {
                 "list 50 quantity ascending"
             }),
             new HelpTopic("filter", List.of(), "filter cards by tag", new String[] {
-                "filter /t TAG",
+                "filter [/t TAG]",
                 "wishlist filter /t sealed"
             }),
             new HelpTopic("analytics", List.of("stats"), "show summary analytics for the current list", new String[] {

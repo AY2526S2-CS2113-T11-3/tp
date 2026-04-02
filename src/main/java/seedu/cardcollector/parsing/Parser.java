@@ -499,13 +499,7 @@ public class Parser {
                     new String[] {"filter", "filter /t sealed"}
             );
         }
-
-        if (tag == null) {
-            throw new ParseInvalidArgumentException(
-                    "filter only supports /t TAG filtering",
-                    new String[] {"filter", "filter /t sealed"}
-            );
-        }
+        
         return new FilterCommand(tag);
     }
 

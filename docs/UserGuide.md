@@ -92,25 +92,24 @@ Displays all cards in the current list in a sorted order.
 - By default, the displayed list is sorted by index in ascending order.
 - Arguments are optional, but if specified, they must be in order.
 - Argument matching is intentionally fuzzy for fast usage.
-- With the exception of quantity and price, all other properties are treated as strings and thus are sorted in lexicographical order.
+- Except for index, quantity and price, all other properties are treated as strings and thus are sorted in lexicographical order.
   - This includes `rarity` and `condition`, as they do not have any predefined order.
-  - This includes card `number` (not to be confused with `index` or `quantity`. 
+  - This includes card `number` (not to be confused with `index` or `quantity`). 
 
 
 ### Filtering cards: `filter`
 
 Displays cards in the current list, optionally filtered by tag.
 
-**Format:** `filter`
-**Format:** `filter /t TAG`
-
-- `TAG` is optional.
-- Use `filter /t TAG` to show only cards with that tag.
-- Use `filter` with no tag to display the full list without applying a tag filter.
+**Format:** `filter [/t TAG]`
 
 **Examples:**
 `filter`
 `filter /t sealed`
+
+- Use `filter /t TAG` to show only cards with that tag.
+- Use `filter` with no tag to display the full list without applying a tag filter.
+ 
 
 ### Viewing analytics: `analytics` or `stats`
 
@@ -201,7 +200,7 @@ Displays cards in the current list that have duplicates.
 
 ### Viewing history: `history`
 
-Displays a historical log of when cards were added, modified, or removed.
+Displays a historical audit log of when cards were added, modified, or removed.
 
 **Format:** `history [NUMBER | all] [added | modified | removed | entire] [ascending | descending]`
 
@@ -210,6 +209,8 @@ Displays a historical log of when cards were added, modified, or removed.
 - An 'added' entry occurs when a new or existing card is added, or when the edit command increases the quantity of the card.
 - A 'modified' entry occurs when a card value is changed, **excluding** any changes to the quantity of the card.
 - A 'removed' entry occurs when a card is removed, or when the edit command decreases the quantity of the card.
+- The `undo` command does not revert the history, but rather adds to the history.
+  An exception to this, is the undo of the `clear` command which restores the history.
 
 **Examples:**
 `history all`
@@ -307,7 +308,7 @@ Exits the application.
 | `tag remove INDEX /t TAG`      | Remove tag/folder                    |
 | `wishlist acquired INDEX`      | Move to inventory                    |
 | `list [...]`                   | List cards                           |
-| `filter [ /t TAG ]`            | Filter cards                         |
+| `filter [/t TAG]`              | Filter cards                         |
 | `analytics` / `stats`          | Show list insights                   |
 | `help [COMMAND]`               | Show command help                    |
 | `download /f FILE_PATH`        | Export data                          |
