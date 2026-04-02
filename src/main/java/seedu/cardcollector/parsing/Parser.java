@@ -2,6 +2,7 @@ package seedu.cardcollector.parsing;
 
 import java.nio.file.Path;
 import seedu.cardcollector.card.CardHistoryType;
+import seedu.cardcollector.card.NumericFilter;
 import seedu.cardcollector.command.AddCommand;
 import seedu.cardcollector.command.AcquiredCommand;
 import seedu.cardcollector.command.AnalyticsCommand;
@@ -23,6 +24,7 @@ import seedu.cardcollector.command.TagCommand;
 import seedu.cardcollector.command.UndoCommand;
 import seedu.cardcollector.command.UndoUploadCommand;
 import seedu.cardcollector.command.UploadCommand;
+import seedu.cardcollector.command.ClearCommand;
 import seedu.cardcollector.card.CardSortCriteria;
 import seedu.cardcollector.exception.ParseBlankCommandException;
 import seedu.cardcollector.exception.ParseInvalidArgumentException;
@@ -94,6 +96,7 @@ public class Parser {
     private static final String KEYWORD_ANALYTICS_COMMAND = "analytics";
     private static final String KEYWORD_STATS_COMMAND = "stats";
     private static final String KEYWORD_HELP_COMMAND = "help";
+    private static final String KEYWORD_CLEAR_COMMAND = "clear";
 
     private static final String[] USAGE_REORDER_COMMAND = {
         "reorder CRITERIA [asc|desc]",
@@ -117,13 +120,18 @@ public class Parser {
 
     private static final String[] USAGE_FIND_COMMAND = {
         "find [/n NAME] [/p PRICE] [/q QUANTITY] [/s SET] [/r RARITY] "
-            + "[/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER] [/nt NOTE] [/t TAG]",
-        "find /n Pikachu",
-        "find /p 12.5",
-        "find /n Pikachu /q 3",
-        "find /s Base Set /r Rare",
-        "find /nt trade",
-        "find /t trade"
+                + "[/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER] [/nt NOTE] [/t TAG]",
+        "find /n pika",
+        "find /p 5.99",
+        "find /q >30",
+        "find /p <3.0",
+        "find /q >=5 /p <=10.5",
+        "find /n charizard /q 2"
+    };
+
+    private static final String[] USAGE_CLEAR_COMMAND = {
+        "clear",
+        "wishlist clear"
     };
 
     private static final String[] USAGE_ADD_COMMAND = {
@@ -191,6 +199,11 @@ public class Parser {
                 return HelpCommand.forKeyword(commandKeyword);
             }
             return handleFind(arguments);
+        case KEYWORD_CLEAR_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
+            return handleClear(arguments);
         case KEYWORD_FILTER_COMMAND:
             if (isInlineHelpRequest(arguments)) {
                 return HelpCommand.forKeyword(commandKeyword);
@@ -382,6 +395,17 @@ public class Parser {
         return new RemoveCardByNameCommand(args.trim());
     }
 
+    private Command handleClear(String arguments) throws ParseInvalidArgumentException {
+        if (!arguments.isBlank()) {
+            throw new ParseInvalidArgumentException(
+                    "Clear command takes no arguments",
+                    USAGE_CLEAR_COMMAND
+            );
+        }
+        return new ClearCommand();
+    }
+
+    //@@author bryankuah
     private Command handleFind(String arguments) throws ParseInvalidArgumentException {
         if (arguments.isBlank()) {
             throw new ParseInvalidArgumentException(
@@ -391,8 +415,8 @@ public class Parser {
         }
 
         String name = null;
-        Float price = null;
-        Integer quantity = null;
+        NumericFilter quantityFilter = null;
+        NumericFilter priceFilter = null;
         String cardSet = null;
         String rarity = null;
         String condition = null;
@@ -405,11 +429,11 @@ public class Parser {
             name = optionalTextFlag(arguments, FLAG_NAME, CARD_FIELD_FLAGS);
             String quantityText = optionalTextFlag(arguments, FLAG_QUANTITY, CARD_FIELD_FLAGS);
             if (quantityText != null) {
-                quantity = Integer.parseInt(quantityText);
+                quantityFilter = NumericFilter.parse(quantityText);
             }
             String priceText = optionalTextFlag(arguments, FLAG_PRICE, CARD_FIELD_FLAGS);
             if (priceText != null) {
-                price = Float.parseFloat(priceText);
+                priceFilter = NumericFilter.parse(priceText);
             }
             cardSet = optionalTextFlag(arguments, FLAG_SET, CARD_FIELD_FLAGS);
             rarity = optionalTextFlag(arguments, FLAG_RARITY, CARD_FIELD_FLAGS);
@@ -420,7 +444,7 @@ public class Parser {
             tag = optionalTextFlag(arguments, FLAG_TAG, CARD_FIELD_FLAGS);
         } catch (NumberFormatException e) {
             throw new ParseInvalidArgumentException(
-                    "Invalid number format for price or quantity",
+                    "Invalid number format for price or quantity (use e.g. >30 or <3.0)",
                     USAGE_FIND_COMMAND
             );
         } catch (Exception e) {
@@ -430,7 +454,7 @@ public class Parser {
             );
         }
 
-        if (name == null && quantity == null && price == null
+        if (name == null && quantityFilter == null && priceFilter == null
                 && cardSet == null && rarity == null && condition == null
                 && language == null && cardNumber == null
                 && note == null && tag == null) {
@@ -440,7 +464,7 @@ public class Parser {
             );
         }
 
-        return new FindCommand(name, quantity, price,
+        return new FindCommand(name, quantityFilter, priceFilter,
                 cardSet, rarity, condition, language, cardNumber, note, tag);
     }
 

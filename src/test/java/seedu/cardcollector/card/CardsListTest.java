@@ -70,7 +70,7 @@ public class CardsListTest {
                 .build());
 
         ArrayList<Card> results = cardsList.findCards(
-                null, null, 10.00f, null, null, null, null, null, null, null);
+                null, null, NumericFilter.parse("10.0"), null, null, null, null, null, null, null);
 
         assertEquals(1, results.size());
         assertEquals("Charizard", results.get(0).getName());
@@ -92,7 +92,7 @@ public class CardsListTest {
                 .build());
 
         ArrayList<Card> results = cardsList.findCards(
-                null, 5, null, null, null, null, null, null, null, null);
+                null, NumericFilter.parse("5"), null, null, null, null, null, null, null, null);
 
         assertEquals(1, results.size());
         assertEquals("Bulbasaur", results.get(0).getName());
@@ -119,7 +119,7 @@ public class CardsListTest {
                 .build());
 
         ArrayList<Card> results = cardsList.findCards(
-                "Mew", 3, null, null, null, null, null, null, null, null);
+                "Mew", NumericFilter.parse("3"), null, null, null, null, null, null, null, null);
 
         assertEquals(2, results.size());
         assertEquals(20.00f, results.get(0).getPrice());
@@ -137,7 +137,7 @@ public class CardsListTest {
                 .build());
 
         ArrayList<Card> results = cardsList.findCards(
-                "Snorlax", null, 100.00f, null, null, null, null, null, null, null);
+                "Snorlax", null, NumericFilter.parse("100.0"), null, null, null, null, null, null, null);
 
         assertEquals(0, results.size());
     }

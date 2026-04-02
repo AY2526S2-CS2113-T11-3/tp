@@ -731,4 +731,10 @@ public class Ui {
 
         out.printf(FORMAT_HISTORY_REMOVED_RECORD, date, removedQuantity, mostRecent);
     }
+
+    public void printCleared(CardsList list) {
+        String listType = list.isWishlist() ? "wishlist" : "inventory";
+        out.println("Your " + listType + " has been cleared!");
+        printList(list);  // shows empty list message
+    }
 }

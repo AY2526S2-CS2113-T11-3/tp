@@ -1,13 +1,14 @@
 package seedu.cardcollector.command;
 
 import seedu.cardcollector.card.Card;
+import seedu.cardcollector.card.NumericFilter;
 
 import java.util.ArrayList;
 
 public class FindCommand extends Command {
     private final String name;
-    private final Integer quantity;
-    private final Float price;
+    private final NumericFilter quantityFilter;
+    private final NumericFilter priceFilter;
     private final String cardSet;
     private final String rarity;
     private final String condition;
@@ -16,12 +17,12 @@ public class FindCommand extends Command {
     private final String note;
     private final String tag;
 
-    public FindCommand(String name, Integer quantity, Float price,
+    public FindCommand(String name, NumericFilter quantityFilter, NumericFilter priceFilter,
                        String cardSet, String rarity, String condition,
                        String language, String cardNumber, String note, String tag) {
         this.name = name;
-        this.quantity = quantity;
-        this.price = price;
+        this.quantityFilter = quantityFilter;
+        this.priceFilter = priceFilter;
         this.cardSet = cardSet;
         this.rarity = rarity;
         this.condition = condition;
@@ -36,7 +37,7 @@ public class FindCommand extends Command {
         var ui = context.getUi();
         var inventory = context.getTargetList();
         ArrayList<Card> results = inventory.findCards(
-                name, quantity, price, cardSet, rarity, condition,
+                name, quantityFilter, priceFilter, cardSet, rarity, condition,
                 language, cardNumber, note, tag);
         ui.printFound(results);
         return new CommandResult(false);
