@@ -351,8 +351,8 @@ it does not mutate the cards list in the inventory.
 - Sorting uses `CardSorter` class which internally creates a `Comparator` to sort a copy of the ArrayList.
 - Users can specify how many cards to display, the sort criteria, and the sort direction.
 - If no arguments are provided, cards are listed by index in ascending order.
-- `Parser` uses [SplitTokenizer](#parser-split-tokenizer) to split up input arguments by whitespace(s) delimiter.
-- Once split, `Parser` uses fuzzy argument matching through the [Disambiguator](#parser-disambiguator) to allow faster typing for experienced CLI users.
+- Parsing uses [SplitTokenizer](#parser-split-tokenizer) to split up input arguments by whitespace(s) delimiter.
+- Once split, fuzzy argument matching through the [Disambiguator](#parser-disambiguator) allows faster typing for experienced CLI users.
 
 #### Architecture-level
 When the user types `list 50 quantity descending`:
@@ -568,8 +568,8 @@ The `history` command displays the contents of the `CardsHistory` which was prev
 While this command itself does not mutate any existing data, it uses `CardFieldChange` on the fly to identify and print exactly what changed in each historical entry.
 
 #### Design decisions
-- `Parser` uses [SplitTokenizer](#parser-split-tokenizer) to split up input arguments by whitespace(s) delimiter.
-- Once split, `parser` uses fuzzy argument matching through the [Disambiguator](#parser-disambiguator) to allow faster typing for experienced CLI users.
+- Parsing uses [SplitTokenizer](#parser-split-tokenizer) to split up input arguments by whitespace(s) delimiter.
+- Once split, fuzzy argument matching through the [Disambiguator](#parser-disambiguator) allows faster typing for experienced CLI users.
 
 To model the interactions that occur when the user issues the command `history all added`, below is a simplified *Sequence Diagram* to illustrate it.
 Some details related to `UI` input handling, `Parsing` and `CardsHistory` have been omitted for brevity.
@@ -720,10 +720,11 @@ public void reorder(CardSortCriteria criteria, boolean isAscending) {
 ```
 
 #### Design decisions
-- Fuzzy argument matching using the [Disambiguator](#parser-disambiguator) allows faster typing for experienced CLI users.
 - In-place sorting (efficient and matches the “reorder” intent).
 - Criteria are defined in the `CardSortCriteria` enum for type safety.
 - Works on wishlist via the same prefix mechanism used by other commands.
+- Parsing uses [SplitTokenizer](#parser-split-tokenizer) to split up input arguments by whitespace(s) delimiter.
+- Once split, fuzzy argument matching through the [Disambiguator](#parser-disambiguator) allows faster typing for experienced CLI users.
 
 ### Clear Feature
 
