@@ -287,21 +287,6 @@ public class Ui {
     }
 
     //@@author HX2003
-    /**
-     * Prints a card record with a date specified.
-     *
-     * @param format Format string used for printing.
-     * @param displayIndex The human-readable index of the card in the list.
-     * @param instant The specified date.
-     * @param card The card.
-     */
-    private void printListRecordWithDate(String format, int displayIndex, Instant instant, Card card) {
-        String date = (instant != null)
-                ? dateTimeFormatter.format(instant)
-                : DISPLAY_DATE_TIME_PLACEHOLDER_FORMAT;
-        out.printf(format, displayIndex, date, card);
-    }
-
     public void printList(CardsList list, CardSortCriteria sortCriteria,
                           int maxDisplayCount, boolean isDescending) {
         printBorder();
@@ -330,6 +315,21 @@ public class Ui {
         }
 
         printBorder();
+    }
+
+    /**
+     * Prints a card record with a date specified.
+     *
+     * @param format Format string used for printing.
+     * @param displayIndex The human-readable index of the card in the list.
+     * @param instant The specified date.
+     * @param card The card.
+     */
+    private void printListRecordWithDate(String format, int displayIndex, Instant instant, Card card) {
+        String date = (instant != null)
+                ? dateTimeFormatter.format(instant)
+                : DISPLAY_DATE_TIME_PLACEHOLDER_FORMAT;
+        out.printf(format, displayIndex, date, card);
     }
 
     /**
