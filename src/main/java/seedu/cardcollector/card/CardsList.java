@@ -502,8 +502,7 @@ public class CardsList {
 
     /**
      * Permanently reorders the main cards list (inventory or wishlist) in-place
-     * by the given criteria. This changes storage order (unlike the view-only
-     * getSortedCards methods).
+     * by the given criteria. This changes storage order.
      */
     public void reorder(CardSortCriteria criteria, boolean isAscending) {
         assert cards != null : "Cards list should be initialized before reordering";
