@@ -46,12 +46,13 @@ public class TagCommand extends Command {
 
     @Override
     public CommandResult undo(CommandContext context) {
-        switch (operation) {
+        boolean success = switch (operation) {
         case ADD -> context.getTargetList().removeTag(targetIndex, tag);
         case REMOVE -> context.getTargetList().addTag(targetIndex, tag);
-        default -> throw new IllegalStateException("Unexpected operation: " + operation);
+        };
+        if (success) {
+            context.getUi().printUndoSuccess(context.getTargetList());
         }
-        context.getUi().printUndoSuccess(context.getTargetList());
-        return new CommandResult(false);
+        return new CommandResult(false,false);
     }
 }
