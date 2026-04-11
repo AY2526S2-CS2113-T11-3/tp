@@ -638,7 +638,7 @@ thus serving as an audit log of the cards in each inventory (separate for wishli
 - 3 category types were devised. They are **mutually exclusive**
   to ensure they can be listed in a chronological sequence without duplicated entries representing the same event.
   - An `ADDED` entry occurs when a new card is added, or when a duplicate card with quantity more than 0 is added, or when the edit command increases the quantity of the card.
-  - A `MODIFIED` entry occurs when a card value is changed, **excluding any changes to the quantity** of the card.
+  - A `MODIFIED` entry occurs when card value(s) are changed, **excluding any changes to the quantity** of the card.
   - A `REMOVED` entry occurs when a card is removed, or when the edit command decreases the quantity of the card.
 
   The `ENTIRE` value is a special enum constant used **only for filtering operations**. It is never assigned to individual history entries;
@@ -646,6 +646,8 @@ thus serving as an audit log of the cards in each inventory (separate for wishli
   
 - It is possible for `ADDED` or `REMOVED` entry to have a quantity change of 0, since it is possible to add a card with a quantity of 0.
 - It is possible for a single edit operation to produce 2 history entries, if both quantity and other fields were changed.
+  The 2 histories entry will be either a `ADD` or `REMOVED` entry, an another `MODIFIED` entry to indicate that other fields were changed.
+  Note that multiple changes to 2 or more other fields are recorded as a single `MODIFIED` entry.
 - There are 2 separate histories, one for the main list and other for the wishlist.
 - `undo` command does not revert the history, but rather adds to the history,
   the exception is the `clear` command which clears the history

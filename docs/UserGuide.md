@@ -228,7 +228,7 @@ thus serving as an audit log of the cards in each inventory (separate for wishli
 - Argument matching is intentionally fuzzy for fast usage.
 - There are 3 types of history entries:
   - `added`: when a new card is added, or when a duplicate card with quantity more than 0 is added, or when the edit command increases the quantity of the card.
-  - `modified`: when a card value is changed, **excluding any changes to the quantity** of the card.
+  - `modified`: when card value(s) are changed, **excluding any changes to the quantity** of the card.
   - `removed`: occurs when a card is removed, or when the edit command decreases the quantity of the card.
 - The `undo` command does not revert the history, but rather adds to the history.
   An exception to this, is the undo of the `clear` command which restores the history.
