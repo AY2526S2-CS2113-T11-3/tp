@@ -199,9 +199,10 @@ Removes the first exact case-insensitive name match.
 
 ### Undoing the most recent change: `undo`
 
-Undoes the most recent reversible add, remove, or edit action.
+Reverts the most recent reversible add, remove, edit, reorder, clear, tag and acquire action.
 
 **Format:** `undo`
+Note: If an `edit` command makes no changes to the card, it will not be registered as an undoable action, Running undo after will undo the last meaningful change instead.
 
 **Example:** `add /n Pikachu /q 1 /p 32.5` followed by `undo`
 

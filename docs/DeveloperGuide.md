@@ -348,29 +348,29 @@ return lastCommand.undo(context);
 
 If the `lastCommand` was an:
 - `AddCommand`: branches on whether the original add was a merge or a new card entry.
-```java
-// loop to check through for duplicate cards for merging
-// if found: 
-this.wasMerged = true;
-this.addedIndex = i;
+    ```java
+    // loop to check through for duplicate cards for merging
+    // if found: 
+    this.wasMerged = true;
+    this.addedIndex = i;
+    
+    int newQuantity = existing.getQuantity() + quantity;
+    inventory.editCard(i, null, newQuantity, null,
+            null, null, null, null, null, null);
+    break;
+    ```
 
-int newQuantity = existing.getQuantity() + quantity;
-inventory.editCard(i, null, newQuantity, null,
-        null, null, null, null, null, null);
-break;
-```
-
-```java
-if (!wasMerged) {
-    // build card
-    inventory.addCard(addedCard);
-    this.addedIndex = inventory.getCards().size()-1;
-}
-
-context.getUi().printAdded(inventory);
-return new CommandResult(false);
-}
-```
+    ```java
+    if (!wasMerged) {
+        // build card
+        inventory.addCard(addedCard);
+        this.addedIndex = inventory.getCards().size()-1;
+    }
+    
+    context.getUi().printAdded(inventory);
+    return new CommandResult(false);
+    }
+    ```
  
 - `EditCommand`: saves old field values and sets isReversible only if something actually changes
   ```java
@@ -394,6 +394,8 @@ return new CommandResult(false);
     return new CommandResult(false);
     }
     ```
+    Note: If an edit command results in no changes, `isReversible` is set to false inside `execute()` and the command is not pushed to `commandHistory`. As a result, calling undo after a no change edit will undo the last actual change instead, which may appear to "skip" the edit entirely.
+
 
 - `RemoveCardByIndexCommand` or `RemoveCardByNameCommand`: saves the card and its index
     ```java
@@ -939,7 +941,7 @@ public CommandResult execute(CommandContext context) {
 ### Mainstream OS
 - Windows, Linux, Unix
 ### Reversible Commands
-- - `AddCommand`, `EditCommand`, `RemoveCardByIndexCommand`, `RemoveCardByNameCommand`, `ClearCommand`, `TagCommand`
+- `AddCommand`, `EditCommand`, `RemoveCardByIndexCommand`, `RemoveCardByNameCommand`, `ClearCommand`, `TagCommand`, `ReorderCommand`, `AcquiredCommand`
 
 ## Appendix: Instructions For Manual Testing
 Given below are instructions to test the app manually.
