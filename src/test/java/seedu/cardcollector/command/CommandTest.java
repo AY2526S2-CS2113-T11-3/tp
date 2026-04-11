@@ -7,6 +7,7 @@ import seedu.cardcollector.card.CardHistoryEntry;
 import seedu.cardcollector.card.CardHistoryType;
 import seedu.cardcollector.card.CardsHistory;
 import seedu.cardcollector.card.CardsList;
+import seedu.cardcollector.util.Box;
 
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -205,17 +206,17 @@ public class CommandTest {
         addCommand.execute(commandContext);
         commandContext.getCommandHistory().push(addCommand);
 
-        Command editCommandIncreaseQuantity = new EditCommand(0, null, 8,
+        Command editCommandIncreaseQuantity = new EditCommand(0, null, Box.of(8),
                 null, null, null, null, null, null, null);
         editCommandIncreaseQuantity.execute(commandContext);
         commandContext.getCommandHistory().push(editCommandIncreaseQuantity);
 
-        Command editCommandDecreaseQuantity = new EditCommand(0, null, 2,
+        Command editCommandDecreaseQuantity = new EditCommand(0, null, Box.of(2),
                 null, null, null, null, null, null, null);
         editCommandDecreaseQuantity.execute(commandContext);
         commandContext.getCommandHistory().push(editCommandDecreaseQuantity);
 
-        Command editCommandChangeName = new EditCommand(0, "MyNamedCard", null,
+        Command editCommandChangeName = new EditCommand(0, Box.of("MyNamedCard"), null,
                 null, null, null, null, null, null, null);
         editCommandChangeName.execute(commandContext);
         commandContext.getCommandHistory().push(editCommandChangeName);
@@ -341,8 +342,9 @@ public class CommandTest {
                 null, null, null, null, null, "old note");
         addCommand.execute(commandContext);
 
-        Command editCommand = new EditCommand(0, null, null, null,
-                null, null, null, null, null, "new note");
+        Command editCommand = new EditCommand(0, null,
+                null, null, null, null, null,
+                null, null, Box.of("new note"));
         editCommand.execute(commandContext);
 
         assertEquals("new note", commandContext.getInventory().getCard(0).getNote());
@@ -357,8 +359,9 @@ public class CommandTest {
         addCommand.execute(commandContext);
         commandContext.getCommandHistory().push(addCommand);
 
-        Command editCommand = new EditCommand(0, null, null, null,
-                null, null, null, null, null, "new note");
+        Command editCommand = new EditCommand(0, null, null,
+                null, null, null,
+                null, null, null, Box.of("new note"));
         editCommand.execute(commandContext);
         commandContext.getCommandHistory().push(editCommand);
 
@@ -439,8 +442,9 @@ public class CommandTest {
     public void execute_editInvalidIndex_noChange() {
         CommandContext commandContext = createCommandContext();
 
-        Command editCommand = new EditCommand(0, "NewName", null, null,
-                null, null, null, null, null, null);
+        Command editCommand = new EditCommand(0, Box.of("NewName"), null,
+                null, null, null, null,
+                null, null, null);
 
         editCommand.execute(commandContext);
 
