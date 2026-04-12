@@ -2,6 +2,7 @@ package seedu.cardcollector.parsing;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.Locale;
 import seedu.cardcollector.card.CardHistoryType;
 import seedu.cardcollector.card.NumericFilter;
 import seedu.cardcollector.command.AddCommand;
@@ -164,7 +165,8 @@ public class Parser {
     private static final String[] USAGE_TRANSFER_COMMAND = {
         "%s /f FILE_PATH",
         "download /f backups/cardcollector.txt",
-        "upload /f backups/cardcollector.txt"
+        "upload /f backups/cardcollector.txt",
+        "File path must end with .txt."
     };
 
     /**
@@ -601,14 +603,37 @@ public class Parser {
             );
         }
 
+        if (!hasTxtExtension(path)) {
+            throw new ParseInvalidArgumentException(
+                    "File path must end with .txt.",
+                    getTransferUsage(commandWord)
+            );
+        }
+
         try {
-            return Path.of(path);
+            return Path.of(expandHomeDirectory(path));
         } catch (InvalidPathException e) {
             throw new ParseInvalidArgumentException(
                     "File path contains invalid characters",
                     getTransferUsage(commandWord)
             );
         }
+    }
+
+    private String expandHomeDirectory(String path) {
+        if (path.equals("~")) {
+            return System.getProperty("user.home");
+        }
+
+        if (path.startsWith("~/") || path.startsWith("~\\")) {
+            return System.getProperty("user.home") + path.substring(1);
+        }
+
+        return path;
+    }
+
+    private boolean hasTxtExtension(String path) {
+        return path.toLowerCase(Locale.ROOT).endsWith(".txt");
     }
 
     private boolean hasWhitespaceAroundPathSeparator(String path) {
@@ -619,7 +644,8 @@ public class Parser {
         return new String[] {
             String.format(USAGE_TRANSFER_COMMAND[0], commandWord),
             USAGE_TRANSFER_COMMAND[1],
-            USAGE_TRANSFER_COMMAND[2]
+            USAGE_TRANSFER_COMMAND[2],
+            USAGE_TRANSFER_COMMAND[3]
         };
     }
 
