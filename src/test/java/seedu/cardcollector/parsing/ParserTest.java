@@ -2,6 +2,10 @@ package seedu.cardcollector.parsing;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Field;
+import java.nio.file.Path;
+
 import seedu.cardcollector.command.AddCommand;
 import seedu.cardcollector.command.AnalyticsCommand;
 import seedu.cardcollector.command.FilterCommand;
@@ -20,6 +24,7 @@ import seedu.cardcollector.exception.ParseBlankCommandException;
 import seedu.cardcollector.exception.ParseInvalidArgumentException;
 import seedu.cardcollector.exception.ParseUnknownCommandException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
@@ -248,6 +253,18 @@ public class ParserTest {
     }
 
     @Test
+    public void parse_transferPathWithTilde_expandsToUserHome() throws Exception {
+        Command command = parser.parse("download /f ~/cs2113/PE-D/g.txt");
+        assertInstanceOf(DownloadCommand.class, command);
+
+        Field targetPathField = DownloadCommand.class.getDeclaredField("targetPath");
+        targetPathField.setAccessible(true);
+        Path targetPath = (Path) targetPathField.get(command);
+
+        assertEquals(Path.of(System.getProperty("user.home"), "cs2113", "PE-D", "g.txt"), targetPath);
+    }
+
+    @Test
     public void parse_transferInvalidPath() {
         Parser parser = new Parser();
 
@@ -265,6 +282,12 @@ public class ParserTest {
                 ParseInvalidArgumentException.class,
                 () -> parser.parse("download /f /test /testing.txt")
         );
+
+        ParseInvalidArgumentException invalidExtension = assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("download /f backups/cards.py")
+        );
+        assertEquals("File path must end with .txt.", invalidExtension.getMessage());
 
         assertThrows(
                 ParseInvalidArgumentException.class,
