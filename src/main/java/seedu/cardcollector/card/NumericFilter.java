@@ -42,6 +42,9 @@ public class NumericFilter {
         }
 
         double val = Double.parseDouble(numStr);
+        if (!Double.isFinite(val)) {
+            throw new NumberFormatException("Numeric filter value must be finite");
+        }
         return new NumericFilter(op, val);
     }
 
