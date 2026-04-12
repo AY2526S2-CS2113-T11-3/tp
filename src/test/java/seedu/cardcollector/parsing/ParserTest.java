@@ -97,6 +97,34 @@ public class ParserTest {
                 ParseInvalidArgumentException.class,
                 () -> parser.parse("add /n Pikachu /q 1 /p -1")
         );
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("add /n Pikachu /q 1 /p 0.001")
+        );
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("edit 1 /p 0.001")
+        );
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("add /n Pikachu /q 1 /p Infinity")
+        );
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("add /n Pikachu /q 1 /p 9999999999999999999999999999999999999999")
+        );
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("add /n Pikachu /q 1 /p NaN")
+        );
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("edit 1 /p Infinity")
+        );
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("find /p Infinity")
+        );
     }
 
     //@@author WeiHeng2003

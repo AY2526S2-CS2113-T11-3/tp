@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Parser {
+    private static final float MINIMUM_NON_ZERO_PRICE = 0.01f;
     private static final String REGEX_WHITESPACES = "\\s+";
     private static final String FLAG_NAME = "/n";
     private static final String FLAG_QUANTITY = "/q";
@@ -353,7 +354,7 @@ public class Parser {
         try {
             name = requireTextFlag(args, FLAG_NAME, ADD_FIELD_FLAGS);
             quantity = Integer.parseInt(requireTextFlag(args, FLAG_QUANTITY, ADD_FIELD_FLAGS));
-            price = Float.parseFloat(requireTextFlag(args, FLAG_PRICE, ADD_FIELD_FLAGS));
+            price = parsePrice(requireTextFlag(args, FLAG_PRICE, ADD_FIELD_FLAGS), USAGE_ADD_COMMAND);
             cardSet = optionalTextFlag(args, FLAG_SET, ADD_FIELD_FLAGS);
             rarity = optionalTextFlag(args, FLAG_RARITY, ADD_FIELD_FLAGS);
             condition = optionalTextFlag(args, FLAG_CONDITION, ADD_FIELD_FLAGS);
@@ -369,6 +370,8 @@ public class Parser {
                     "Quantity must be an integer and price must be float",
                     USAGE_ADD_COMMAND
             );
+        } catch (ParseInvalidArgumentException e) {
+            throw e;
         } catch (Exception e) {
             throw new ParseInvalidArgumentException(
                     "Invalid add format",
@@ -397,14 +400,22 @@ public class Parser {
             );
         }
 
-        if (price < 0) {
+        return new AddCommand(uid, name, quantity, price, cardSet, rarity, condition, language, cardNumber, note);
+    }
+
+    private float parsePrice(String priceText, String[] usage) throws ParseInvalidArgumentException {
+        float price = Float.parseFloat(priceText);
+        if (!Float.isFinite(price) || price < 0 || isBelowMinimumNonZeroPrice(price)) {
             throw new ParseInvalidArgumentException(
-                    "Price cannot be negative",
-                    USAGE_ADD_COMMAND
+                    "Price must be 0 or at least 0.01",
+                    usage
             );
         }
+        return price;
+    }
 
-        return new AddCommand(uid, name, quantity, price, cardSet, rarity, condition, language, cardNumber, note);
+    private boolean isBelowMinimumNonZeroPrice(float price) {
+        return price > 0 && price < MINIMUM_NON_ZERO_PRICE;
     }
 
     private Command handleRemoveByIndex(String args) throws ParseInvalidArgumentException {
@@ -843,7 +854,7 @@ public class Parser {
 
                 Box<String> priceText = optionalTextFlagBoxed(flagArgs, FLAG_PRICE, CARD_FIELD_FLAGS);
                 if (priceText != null) {
-                    price = Box.of(Float.parseFloat(priceText.get()));
+                    price = Box.of(parsePrice(priceText.get(), USAGE_EDIT_COMMAND));
                 }
 
                 cardSet = optionalTextFlagBoxed(flagArgs, FLAG_SET, CARD_FIELD_FLAGS);
@@ -857,6 +868,8 @@ public class Parser {
                         "Quantity must be an integer and price must be float",
                         USAGE_EDIT_COMMAND
                 );
+            } catch (ParseInvalidArgumentException e) {
+                throw e;
             } catch (Exception e) {
                 throw new ParseInvalidArgumentException(
                         "Invalid edit format",
@@ -882,13 +895,6 @@ public class Parser {
         if (quantity != null && quantity.get() <= 0) {
             throw new ParseInvalidArgumentException(
                     "Quantity cannot be negative or equal 0",
-                    USAGE_EDIT_COMMAND
-            );
-        }
-
-        if (price != null && price.get() < 0) {
-            throw new ParseInvalidArgumentException(
-                    "Price cannot be negative",
                     USAGE_EDIT_COMMAND
             );
         }
