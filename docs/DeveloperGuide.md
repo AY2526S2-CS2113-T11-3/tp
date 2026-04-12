@@ -403,9 +403,18 @@ If the `lastCommand` was an:
   `EditCommand.undo()` then restores all fields by calling `editCard` with the saved old values:
     ```java
     public CommandResult undo(CommandContext context) {
-        originalCard.setLastModified(Instant.now());
-        context.getTargetList().restoreCard(targetIndex, originalCard);
-        context.getUi().printUndoSuccess(context.getTargetList());
+        var targetList = getAffectedList(context);
+        targetList.editCard(targetIndex,
+                Box.of(originalCard.getName()),
+                Box.of(originalCard.getQuantity()),
+                Box.of(originalCard.getPrice()),
+                Box.of(originalCard.getCardSet()),
+                Box.of(originalCard.getRarity()),
+                Box.of(originalCard.getCondition()),
+                Box.of(originalCard.getLanguage()),
+                Box.of(originalCard.getCardNumber()),
+                Box.of(originalCard.getNote()));
+        context.getUi().printUndoSuccess(targetList);
         return new CommandResult(false);
     }
     ```
