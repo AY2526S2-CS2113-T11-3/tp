@@ -545,6 +545,7 @@ The `find` command searches the current list using one or more optional filters.
 - Supported filters include name, quantity, price, metadata fields, notes, and tags.
 - All provided conditions are combined using logical AND.
 - String comparisons are case-insensitive to make search more user-friendly.
+- `Parser` rejects duplicate `find` flags before extracting field values.
 
 #### Design decisions
 - Keeping `find` flag-based makes it consistent with `add` and `edit`.

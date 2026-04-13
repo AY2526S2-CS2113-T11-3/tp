@@ -372,6 +372,20 @@ public class ParserTest {
     }
 
     @Test
+    public void parse_findDuplicateFlags_exceptionThrown() {
+        String[] invalidInputs = {
+            "find /n Pikachu /n Charizard",
+            "find /p 1.00 /p 2.00",
+            "find /q >1 /n Pikachu /q <5",
+            "find /t trade /t sealed"
+        };
+
+        for (String input : invalidInputs) {
+            assertThrows(ParseInvalidArgumentException.class, () -> parser.parse(input));
+        }
+    }
+
+    @Test
     public void parse_tagAndTagFilterCommands_success() throws Exception {
         assertInstanceOf(FindCommand.class, parser.parse("find /t trade"));
         assertInstanceOf(FilterCommand.class, parser.parse("filter /t sealed"));

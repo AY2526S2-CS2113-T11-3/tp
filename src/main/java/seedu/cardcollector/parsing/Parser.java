@@ -514,6 +514,8 @@ public class Parser {
         String note = null;
         String tag = null;
 
+        rejectDuplicateFlags(arguments, CARD_FIELD_FLAGS, USAGE_FIND_COMMAND);
+
         try {
             name = optionalTextFlag(arguments, FLAG_NAME, CARD_FIELD_FLAGS);
             String quantityText = optionalTextFlag(arguments, FLAG_QUANTITY, CARD_FIELD_FLAGS);
@@ -1044,8 +1046,26 @@ public class Parser {
         return value.isEmpty() ? null : Box.of(value);
     }
 
+    private static void rejectDuplicateFlags(String input, String[] knownFlags, String[] usage)
+            throws ParseInvalidArgumentException {
+        for (String knownFlag : knownFlags) {
+            int firstFlagIndex = indexOfFlag(input, knownFlag);
+            if (firstFlagIndex < 0) {
+                continue;
+            }
+
+            int secondFlagIndex = indexOfFlag(input, knownFlag, firstFlagIndex + knownFlag.length());
+            if (secondFlagIndex >= 0) {
+                throw new ParseInvalidArgumentException("Duplicate flag detected: " + knownFlag, usage);
+            }
+        }
+    }
+
     private static int indexOfFlag(String input, String flag) {
-        int fromIndex = 0;
+        return indexOfFlag(input, flag, 0);
+    }
+
+    private static int indexOfFlag(String input, String flag, int fromIndex) {
         while (fromIndex < input.length()) {
             int candidateIndex = input.indexOf(flag, fromIndex);
             if (candidateIndex < 0) {
