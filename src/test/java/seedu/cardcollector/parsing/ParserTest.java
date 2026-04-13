@@ -355,6 +355,10 @@ public class ParserTest {
         );
         assertThrows(
                 ParseInvalidArgumentException.class,
+                () -> parser.parse("tag remove 1 /t")
+        );
+        assertThrows(
+                ParseInvalidArgumentException.class,
                 () -> parser.parse("tag move 1 /t deck")
         );
         assertThrows(
