@@ -160,7 +160,7 @@ public class CardsList {
 
             if (card.getPrice() <= 0) {
                 zeroPriceCards++;
-            } else if (card.getPrice() < 10) {
+            } else if (card.getPrice() >= Card.MINIMUM_NON_ZERO_PRICE && card.getPrice() < 10) {
                 lowPriceCards++;
             } else if (card.getPrice() < 50) {
                 mediumPriceCards++;
