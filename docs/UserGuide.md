@@ -32,6 +32,7 @@ Lists all available commands in a compact reference view, or shows detailed synt
 ### Adding a card: `add`
 
 Adds a new card to the current list.
+Note: If two cards have the same name, price and other metadata, the cards are stacked (quantity increase).
 
 **Format:** `add /n NAME /q QUANTITY /p PRICE [/s SET] [/r RARITY] [/c CONDITION] 
 [/l LANGUAGE] [/no CARD_NUMBER] [/nt NOTE]`
