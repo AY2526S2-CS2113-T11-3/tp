@@ -194,7 +194,21 @@ public class Parser {
         String arguments = parts.length > 1 ? parts[1] : "";
 
         if (commandKeyword.equals(KEYWORD_HELP_COMMAND)) {
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleHelp(arguments);
+        }
+
+        if (!isKnownCommandKeyword(commandKeyword)) {
+            throw new ParseUnknownCommandException(commandKeyword);
+        }
+
+        if (!isInlineHelpRequest(arguments) && hasHelpFlag(arguments)) {
+            throw new ParseInvalidArgumentException(
+                    "The /h help flag cannot be combined with other arguments",
+                    new String[] {commandKeyword + " /h"}
+            );
         }
 
         switch (commandKeyword) {
@@ -316,6 +330,40 @@ public class Parser {
 
     private boolean isInlineHelpRequest(String arguments) {
         return arguments.trim().equals(FLAG_HELP);
+    }
+
+    private boolean hasHelpFlag(String arguments) {
+        return indexOfFlag(arguments, FLAG_HELP) >= 0;
+    }
+
+    private boolean isKnownCommandKeyword(String commandKeyword) {
+        switch (commandKeyword) {
+        case KEYWORD_ADD_COMMAND:
+        case KEYWORD_REMOVE_INDEX_COMMAND:
+        case KEYWORD_REMOVE_NAME_COMMAND:
+        case KEYWORD_FIND_COMMAND:
+        case KEYWORD_CLEAR_COMMAND:
+        case KEYWORD_FILTER_COMMAND:
+        case KEYWORD_LIST_COMMAND:
+        case KEYWORD_DUPLICATES_COMMAND:
+        case KEYWORD_HISTORY_COMMAND:
+        case KEYWORD_EXIT_COMMAND:
+        case KEYWORD_EDIT_COMMAND:
+        case KEYWORD_COMPARE_COMMAND:
+        case KEYWORD_DOWNLOAD_COMMAND:
+        case KEYWORD_UPLOAD_COMMAND:
+        case KEYWORD_UNDO_UPLOAD_COMMAND:
+        case KEYWORD_ACQUIRED_COMMAND:
+        case KEYWORD_REORDER_COMMAND:
+        case KEYWORD_UNDO_COMMAND:
+        case KEYWORD_TAG_COMMAND:
+        case KEYWORD_FOLDER_COMMAND:
+        case KEYWORD_ANALYTICS_COMMAND:
+        case KEYWORD_STATS_COMMAND:
+            return true;
+        default:
+            return false;
+        }
     }
 
     private Command handleAnalytics(String arguments) throws ParseInvalidArgumentException {

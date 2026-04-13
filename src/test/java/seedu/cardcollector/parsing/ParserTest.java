@@ -44,6 +44,7 @@ public class ParserTest {
         assertThrows(ParseBlankCommandException.class, () -> parser.parse("     "));
         assertThrows(ParseUnknownCommandException.class, () -> parser.parse("powwow"));
         assertThrows(ParseUnknownCommandException.class, () -> parser.parse("delicious flower"));
+        assertThrows(ParseUnknownCommandException.class, () -> parser.parse("powwow /h now"));
     }
 
     //@@author WeiHeng2003
@@ -328,9 +329,46 @@ public class ParserTest {
         assertInstanceOf(HelpCommand.class, parser.parse("help"));
         assertInstanceOf(HelpCommand.class, parser.parse("help add"));
         assertInstanceOf(HelpCommand.class, parser.parse("help trade"));
+        assertInstanceOf(HelpCommand.class, parser.parse("help /h"));
         assertInstanceOf(HelpCommand.class, parser.parse("add /h"));
+        assertInstanceOf(HelpCommand.class, parser.parse("find /h"));
+        assertInstanceOf(HelpCommand.class, parser.parse("edit /h"));
+        assertInstanceOf(HelpCommand.class, parser.parse("tag /h"));
         assertInstanceOf(HelpCommand.class, parser.parse("folder /h"));
         assertInstanceOf(HelpCommand.class, parser.parse("stats /h"));
+    }
+
+    @Test
+    public void parse_helpFlagMixedWithArguments_exceptionThrown() {
+        String[] invalidInputs = {
+            "add /n C /h /p 1 /q 1",
+            "add /h /n C /p 1 /q 1",
+            "removename Pikachu /h",
+            "find /n C /h",
+            "edit 1 /n C /h",
+            "filter /t sealed /h",
+            "tag add 1 /t deck /h",
+            "folder remove 1 /t trade /h",
+            "list all /h",
+            "history all /h",
+            "reorder name /h",
+            "removeindex 1 /h",
+            "compare 1 /h",
+            "download /f backups/cards.txt /h",
+            "upload /f backups/cards.txt /h",
+            "undoupload /h now",
+            "acquired 1 /h",
+            "analytics /h now",
+            "stats /h now",
+            "duplicates /h now",
+            "clear /h now",
+            "undo /h now",
+            "bye /h now"
+        };
+
+        for (String input : invalidInputs) {
+            assertThrows(ParseInvalidArgumentException.class, () -> parser.parse(input));
+        }
     }
 
     @Test
