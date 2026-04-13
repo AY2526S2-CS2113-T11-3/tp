@@ -88,6 +88,7 @@ Displays cards in the specified inventory in a sorted order.
   You can change how many cards to display, the sorting criteria, and in which direction sorting should be done.
 - Arguments are optional, but if specified, must be in sequential order without skipping any.
 - Argument matching is intentionally fuzzy for fast usage.
+  However, please be aware that "no" will be interpreted as `note`, not `number`.
 - **Sorting guide**:
   - Except for `index`, `quantity`, `price`, `number`, **all** other properties are treated as strings and thus are sorted in case-insensitive lexicographical order.
     - This includes `rarity` and `condition`, as they do not have any predefined order.
@@ -116,6 +117,7 @@ Permanently reorders the stored cards in your inventory or wishlist by the chose
 - By default, the sorting direction is in ascending order.
 - CRITERIA argument must be specified, the extra argument if specified, must be after CRITERIA.
 - Argument matching is intentionally fuzzy for fast usage.
+  However, please be aware that "no" will be interpreted as `note`, not `number`.
 - Refer to the [sorting guide](#listing-cards-list) under `list` for more information for how the various sorting criterias works.
 
 ### Filtering cards: `filter`
