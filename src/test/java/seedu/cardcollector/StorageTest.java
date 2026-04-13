@@ -2,10 +2,16 @@ package seedu.cardcollector;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Stack;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -194,6 +200,20 @@ public class StorageTest {
 
         assertEquals(0, state.getInventory().getSize());
         assertEquals(0, state.getWishlist().getSize());
+    }
+
+    @Test
+    public void load_subCentPositivePrice_throwsException() throws Exception {
+        Path storagePath = tempDir.resolve("sub-cent-price.txt");
+        String name = Base64.getEncoder().encodeToString("Tiny".getBytes(StandardCharsets.UTF_8));
+        Files.write(storagePath, java.util.List.of(
+                "CARDCOLLECTOR_STORAGE_V5",
+                "SECTION inventory",
+                UUID.randomUUID() + "\t" + name + "\t1\t0.00000001\t-\t-\t-",
+                "ENDSECTION"
+        ), StandardCharsets.UTF_8);
+
+        assertThrows(IOException.class, () -> new Storage(storagePath).load());
     }
 
     private static CardsList buildListWithSingleCard(String name, float price, int quantity) {

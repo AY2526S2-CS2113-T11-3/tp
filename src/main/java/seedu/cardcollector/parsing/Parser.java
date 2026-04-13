@@ -3,6 +3,7 @@ package seedu.cardcollector.parsing;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Locale;
+import seedu.cardcollector.card.Card;
 import seedu.cardcollector.card.CardHistoryType;
 import seedu.cardcollector.card.NumericFilter;
 import seedu.cardcollector.command.AddCommand;
@@ -38,7 +39,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Parser {
-    private static final float MINIMUM_NON_ZERO_PRICE = 0.01f;
     private static final String REGEX_WHITESPACES = "\\s+";
     private static final String FLAG_NAME = "/n";
     private static final String FLAG_QUANTITY = "/q";
@@ -405,17 +405,13 @@ public class Parser {
 
     private float parsePrice(String priceText, String[] usage) throws ParseInvalidArgumentException {
         float price = Float.parseFloat(priceText);
-        if (!Float.isFinite(price) || price < 0 || isBelowMinimumNonZeroPrice(price)) {
+        if (!Card.isValidPrice(price)) {
             throw new ParseInvalidArgumentException(
                     "Price must be 0 or at least 0.01",
                     usage
             );
         }
         return price;
-    }
-
-    private boolean isBelowMinimumNonZeroPrice(float price) {
-        return price > 0 && price < MINIMUM_NON_ZERO_PRICE;
     }
 
     private Command handleRemoveByIndex(String args) throws ParseInvalidArgumentException {

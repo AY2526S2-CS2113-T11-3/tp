@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CardsListTest {
@@ -25,6 +26,15 @@ public class CardsListTest {
 
         assertEquals(1, cardsList.getSize());
         assertEquals(card, cardsList.getCard(0));
+    }
+
+    @Test
+    public void cardBuilder_subCentPositivePrice_throwsException() {
+        assertThrows(IllegalArgumentException.class, () -> new Card.Builder()
+                .name("Tiny")
+                .price(0.00000001f)
+                .quantity(1)
+                .build());
     }
 
     @Test

@@ -8,6 +8,8 @@ import java.util.StringJoiner;
 import java.util.UUID;
 
 public class Card {
+    public static final float MINIMUM_NON_ZERO_PRICE = 0.01f;
+
     private final UUID uid;
     private String name;
     private int quantity;
@@ -72,6 +74,7 @@ public class Card {
         }
 
         public Builder price(float price) {
+            validatePrice(price);
             this.price = price;
             return this;
         }
@@ -181,7 +184,20 @@ public class Card {
     }
 
     public void setPrice(float price) {
+        validatePrice(price);
         this.price = price;
+    }
+
+    public static boolean isValidPrice(float price) {
+        return Float.isFinite(price)
+                && price >= 0
+                && (price == 0 || price >= MINIMUM_NON_ZERO_PRICE);
+    }
+
+    private static void validatePrice(float price) {
+        if (!isValidPrice(price)) {
+            throw new IllegalArgumentException("Price must be 0 or at least 0.01");
+        }
     }
 
     public String getCardSet() {
