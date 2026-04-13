@@ -521,12 +521,13 @@ The `duplicates` command displays cards in the current list that appear to be du
 4. `Ui` prints the duplicate subset.
 
 #### Implementation
-- The feature reuses the same card-variant comparison logic used by the add feature.
-- This ensures duplicate detection is consistent with add-merge behaviour.
+- The feature compares card names after trimming surrounding spaces and converting to lower case.
+- Duplicate detection is based on separate card records with the same normalized name.
+- A single card record with quantity greater than 1 is not treated as a duplicate by itself.
 - The command is read-only and does not mutate any stored data.
 
 #### Design decisions
-- Reusing existing comparison logic avoids having two definitions of what counts as the “same” card.
+- Using card names as the duplicate key matches the user-facing purpose of finding repeated entries.
 - Making the command read-only means it does not need undo support.
 
 ### Find Feature

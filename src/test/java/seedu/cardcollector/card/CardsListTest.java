@@ -282,31 +282,46 @@ public class CardsListTest {
 
     @Test
     public void getDuplicateCards_success() {
-        CardsList cardsList = new CardsList();
-
-        cardsList.addCard(new Card.Builder()
+        ArrayList<Card> cards = new ArrayList<>();
+        cards.add(new Card.Builder()
                 .name("Eevee")
                 .price(4.00f)
-                .quantity(2)
+                .quantity(1)
                 .build());
 
-        cardsList.addCard(new Card.Builder()
+        cards.add(new Card.Builder()
+                .name("Eevee")
+                .price(4.00f)
+                .quantity(1)
+                .build());
+
+        cards.add(new Card.Builder()
                 .name("Mew")
                 .price(30.00f)
                 .quantity(1)
                 .build());
 
-        cardsList.addCard(new Card.Builder()
+        cards.add(new Card.Builder()
                 .name("Squirtle")
                 .price(3.00f)
-                .quantity(3)
+                .quantity(1)
                 .build());
+
+        cards.add(new Card.Builder()
+                .name("Squirtle")
+                .price(3.00f)
+                .quantity(1)
+                .build());
+
+        CardsList cardsList = new CardsList(cards, new CardsHistory());
 
         ArrayList<Card> duplicates = cardsList.getDuplicateCards();
 
-        assertEquals(2, duplicates.size());
+        assertEquals(4, duplicates.size());
         assertEquals("Eevee", duplicates.get(0).getName());
-        assertEquals("Squirtle", duplicates.get(1).getName());
+        assertEquals("Eevee", duplicates.get(1).getName());
+        assertEquals("Squirtle", duplicates.get(2).getName());
+        assertEquals("Squirtle", duplicates.get(3).getName());
     }
 
     @Test
@@ -750,7 +765,7 @@ public class CardsListTest {
     }
 
     @Test
-    public void getDuplicateCards_singleDuplicate_success() {
+    public void getDuplicateCards_quantityGreaterThanOne_returnsEmptyList() {
         CardsList cardsList = new CardsList();
 
         cardsList.addCard(new Card.Builder().name("Eevee").price(4.0f).quantity(2).build());
@@ -758,8 +773,23 @@ public class CardsListTest {
 
         ArrayList<Card> duplicates = cardsList.getDuplicateCards();
 
-        assertEquals(1, duplicates.size());
+        assertTrue(duplicates.isEmpty());
+    }
+
+    @Test
+    public void getDuplicateCards_sameNameDifferentPrice_success() {
+        ArrayList<Card> cards = new ArrayList<>();
+        cards.add(new Card.Builder().name("Eevee").price(4.0f).quantity(2).build());
+        cards.add(new Card.Builder().name("Eevee").price(5.0f).quantity(1).build());
+        cards.add(new Card.Builder().name("Mew").price(30.0f).quantity(1).build());
+
+        CardsList cardsList = new CardsList(cards, new CardsHistory());
+
+        ArrayList<Card> duplicates = cardsList.getDuplicateCards();
+
+        assertEquals(2, duplicates.size());
         assertEquals("Eevee", duplicates.get(0).getName());
+        assertEquals("Eevee", duplicates.get(1).getName());
     }
 
     @Test
