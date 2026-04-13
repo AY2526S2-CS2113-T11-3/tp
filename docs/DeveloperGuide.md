@@ -369,7 +369,7 @@ If the `lastCommand` was an:
     this.addedIndex = i;
     
     int newQuantity = existing.getQuantity() + quantity;
-    inventory.editCard(i, null, newQuantity, null,
+    inventory.editCard(i, null, Box.of(newQuantity), null,
             null, null, null, null, null, null);
     break;
     ```
@@ -428,7 +428,8 @@ If the `lastCommand` was an:
     ```
  - `RemoveCardByIndexCommand.undo()` or `RemoveCardByNameCommand.undo()` then re-inserts the card at the same position
     ```java
-    context.getTargetList().addCardAtIndex(removedIndex, removedCard);
+    var targetList = getAffectedList(context);
+    targetList.addCardAtIndex(targetIndex, removedCard);
     ```
  - `ClearCommand`: saves a deep copy of the entire list before clearing
     ```java
