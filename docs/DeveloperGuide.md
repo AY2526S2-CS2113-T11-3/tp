@@ -225,85 +225,51 @@ When the user types `edit 1 /n Dragonite /q 3`:
 
 #### Implementation (key code snippets)
 
-**Parsing logic for `edit`** in `Parser.java` (inside `handleEdit`):
+**Parsing logic for edit** in `Parser.java` (inside `handleEdit`):
 
 ```java
-String[] parts = args.trim().split(REGEX_WHITESPACES, 2);
-int index = Integer.parseInt(parts[0].trim()) - 1;
+private Command handleEdit(String args) throws ParseInvalidArgumentException {
+    if (args.isBlank()) {
+        throw new ParseInvalidArgumentException("Index must be provided", USAGE_EDIT_COMMAND);
+    }
 
-String flagArgs = parts.length > 1 ? parts[1] : "";
+    String[] parts = args.trim().split(REGEX_WHITESPACES, 2);
+    int index = Integer.parseInt(parts[0].trim()) - 1;
 
-String name = extractOptionalFlag(flagArgs, "/n");
-Integer quantity = extractOptionalInteger(flagArgs, "/q");
-Float price = extractOptionalFloat(flagArgs, "/p");
-String cardSet = extractOptionalFlag(flagArgs, "/s");
-String rarity = extractOptionalFlag(flagArgs, "/r");
-String condition = extractOptionalFlag(flagArgs, "/c");
-String language = extractOptionalFlag(flagArgs, "/l");
-String cardNumber = extractOptionalFlag(flagArgs, "/no");
-String note = extractOptionalFlag(flagArgs, "/nt");
+    String flagArgs = parts.length > 1 ? parts[1] : "";
 
-if (allFieldsAreNull(name, quantity, price, cardSet, rarity, condition, language, cardNumber, note)) {
-        throw new ParseInvalidArgumentException(...);
+    Box<String> name = optionalTextFlagBoxed(flagArgs, FLAG_NAME, CARD_FIELD_FLAGS);
+    Box<Integer> quantity = parseOptionalIntegerFlag(flagArgs, FLAG_QUANTITY);
+    Box<Float> price = parseOptionalFloatFlag(flagArgs, FLAG_PRICE);
+    Box<String> cardSet = optionalTextFlagBoxed(flagArgs, FLAG_SET, CARD_FIELD_FLAGS);
+    Box<String> rarity = optionalTextFlagBoxed(flagArgs, FLAG_RARITY, CARD_FIELD_FLAGS);
+    Box<String> condition = optionalTextFlagBoxed(flagArgs, FLAG_CONDITION, CARD_FIELD_FLAGS);
+    Box<String> language = optionalTextFlagBoxed(flagArgs, FLAG_LANGUAGE, CARD_FIELD_FLAGS);
+    Box<String> cardNumber = optionalTextFlagBoxed(flagArgs, FLAG_CARD_NUMBER, CARD_FIELD_FLAGS);
+    Box<String> note = optionalTextFlagBoxed(flagArgs, FLAG_NOTE, CARD_FIELD_FLAGS);
+
+    // validation for quantity > 0, cardNumber format, etc. (omitted for brevity)
+
+    if (name == null && quantity == null && price == null
+            && cardSet == null && rarity == null && condition == null
+            && language == null && cardNumber == null && note == null) {
+        throw new ParseInvalidArgumentException("At least one field must be provided to edit", USAGE_EDIT_COMMAND);
+    }
+
+    return new EditCommand(index, name, quantity, price,
+            cardSet, rarity, condition, language, cardNumber, note);
 }
-
-        return new EditCommand(index, name, quantity, price,
-                               cardSet, rarity, condition, language, cardNumber, note);
 ```
 
-**Core editing logic** in `CardsList.java`:
+**Core editing logic** in `CardsList.java` (and called from `EditCommand`):
 
 ```java
-public boolean editCard(int index, String newName, Integer newQuantity, Float newPrice,
-                        String newCardSet, String newRarity, String newCondition,
-                        String newLanguage, String newCardNumber, String newNote) {
-
-    Card card = cards.get(index);
-    Instant currentInstant = Instant.now();
-    boolean anyChange = false;
-
-    if (newName != null && !newName.trim().isEmpty()) {
-        card.setName(newName.trim());
-        anyChange = true;
-    }
-    if (newQuantity != null) {
-        card.setQuantity(newQuantity);
-        anyChange = true;
-    }
-    if (newPrice != null) {
-        card.setPrice(newPrice);
-        anyChange = true;
-    }
-    if (newCardSet != null) {
-        card.setCardSet(newCardSet);
-        anyChange = true;
-    }
-    if (newRarity != null) {
-        card.setRarity(newRarity);
-        anyChange = true;
-    }
-    if (newCondition != null) {
-        card.setCondition(newCondition);
-        anyChange = true;
-    }
-    if (newLanguage != null) {
-        card.setLanguage(newLanguage);
-        anyChange = true;
-    }
-    if (newCardNumber != null) {
-        card.setCardNumber(newCardNumber);
-        anyChange = true;
-    }
-    if (newNote != null) {
-        card.setNote(newNote);
-        anyChange = true;
-    }
-
-    if (anyChange) {
-        card.setLastModified(currentInstant);
-    }
-
-    return anyChange;
+public boolean editCard(int index, Box<String> newName, Box<Integer> newQuantity,
+                        Box<Float> newPrice, Box<String> newCardSet, Box<String> newRarity,
+                        Box<String> newCondition, Box<String> newLanguage,
+                        Box<String> newCardNumber, Box<String> newNote) {
+    // special quantity handling + history.add + mergeIfDuplicateAfterEdit
+    // (full implementation now uses isUpdatedValue helper and tracks lastAdded/lastRemoved)
 }
 ```
 
@@ -854,13 +820,27 @@ The `reorder` command permanently changes the order of cards in the current list
 
 #### Implementation
 **Core logic** in `ReorderCommand.java`:
+
 ```java
 @Override
 public CommandResult execute(CommandContext context) {
     var ui = context.getUi();
-    var targetList = context.getTargetList();
+    var targetList = getAffectedList(context);
+
+    // Save current order before reordering (for undo)
+    this.previousOrder = new ArrayList<>(targetList.getCards());
+
     targetList.reorder(criteria, isAscending);
     ui.printReordered(targetList);
+    return new CommandResult(false);
+}
+
+@Override
+public CommandResult undo(CommandContext context) {
+    var targetList = getAffectedList(context);
+    targetList.getCards().clear();
+    targetList.getCards().addAll(previousOrder);
+    context.getUi().printUndoSuccess(targetList);
     return new CommandResult(false);
 }
 ```
@@ -947,7 +927,7 @@ public CommandResult execute(CommandContext context) {
     inventory.addCard(card);
 
     ui.printAcquired(inventory);
-    return new CommandResult(false, true);
+    return new CommandResult(false, true);  // reversible
 }
 ```
 
