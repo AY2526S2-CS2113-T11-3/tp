@@ -232,7 +232,10 @@ Note: If an `edit` command makes no changes to the card, it will not be register
 
 ### Finding duplicate cards: `duplicates`
 
-Displays cards in the current list that have duplicates.
+Displays cards in the current list whose names appear in more than one card record.
+Cards are considered duplicates when they have the same name, ignoring case and surrounding spaces,
+even if their quantity, price, or other details are different.
+A single card record with quantity greater than 1 is not considered a duplicate by itself.
 
 **Format:** `duplicates`
 

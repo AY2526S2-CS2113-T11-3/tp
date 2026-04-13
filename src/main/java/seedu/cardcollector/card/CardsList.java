@@ -329,13 +329,30 @@ public class CardsList {
     public ArrayList<Card> getDuplicateCards() {
         ArrayList<Card> duplicates = new ArrayList<>();
 
-        for (Card card : cards) {
-            if (card.getQuantity() > 1) {
-                duplicates.add(card);
+        for (int i = 0; i < cards.size(); i++) {
+            Card firstCard = cards.get(i);
+
+            for (int j = i + 1; j < cards.size(); j++) {
+                Card secondCard = cards.get(j);
+
+                if (normalized(firstCard.getName()).equals(normalized(secondCard.getName()))) {
+                    addIfAbsentByReference(duplicates, firstCard);
+                    addIfAbsentByReference(duplicates, secondCard);
+                }
             }
         }
 
         return duplicates;
+    }
+
+    private static void addIfAbsentByReference(ArrayList<Card> cards, Card card) {
+        for (Card existingCard : cards) {
+            if (existingCard == card) {
+                return;
+            }
+        }
+
+        cards.add(card);
     }
 
     public boolean editCard(int index, Box<String> newName, Box<Integer> newQuantity, Box<Float> newPrice,

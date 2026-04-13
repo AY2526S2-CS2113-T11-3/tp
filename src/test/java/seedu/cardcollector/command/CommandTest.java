@@ -3,6 +3,7 @@ package seedu.cardcollector.command;
 import org.junit.jupiter.api.Test;
 import seedu.cardcollector.ui.Ui;
 import seedu.cardcollector.UploadUndoState;
+import seedu.cardcollector.card.Card;
 import seedu.cardcollector.card.CardHistoryEntry;
 import seedu.cardcollector.card.CardHistoryType;
 import seedu.cardcollector.card.CardsHistory;
@@ -417,17 +418,17 @@ public class CommandTest {
     public void execute_duplicatesCommand_success() {
         CommandContext commandContext = createCommandContext();
 
-        new AddCommand(null, "Eevee", 2, 4.0f,
-                null, null, null, null, null, null).execute(commandContext);
-        new AddCommand(null, "Mew", 1, 30.0f,
-                null, null, null, null, null, null).execute(commandContext);
-        new AddCommand(null, "Squirtle", 3, 3.0f,
-                null, null, null, null, null, null).execute(commandContext);
+        ArrayList<Card> cards = new ArrayList<>();
+        cards.add(new Card.Builder().name("Eevee").price(4.0f).quantity(1).build());
+        cards.add(new Card.Builder().name("Eevee").price(5.0f).quantity(1).build());
+        cards.add(new Card.Builder().name("Mew").price(30.0f).quantity(1).build());
+        cards.add(new Card.Builder().name("Squirtle").price(3.0f).quantity(1).build());
+        cards.add(new Card.Builder().name("Squirtle").price(4.0f).quantity(1).build());
+        commandContext.getInventory().replaceWith(new CardsList(cards, new CardsHistory()));
 
         new DuplicatesCommand().execute(commandContext);
 
-        String output = commandContext.getUi().toString();
-        assertEquals(2, commandContext.getInventory().getDuplicateCards().size());
+        assertEquals(4, commandContext.getInventory().getDuplicateCards().size());
     }
 
     @Test
