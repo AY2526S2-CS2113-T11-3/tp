@@ -165,6 +165,7 @@ set insights, price distribution, and metadata coverage.
 - `/p` and `/q` support **range operators**: `>`, `>=`, `<`, `<=`, or exact value.
 - All other fields are **substring** (case-insensitive) matches.
 - You can combine any number of flags.
+- Each flag can be used at most once per command.
 
 **Examples:**
 - `find /n charizard`
